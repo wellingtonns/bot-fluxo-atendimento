@@ -466,14 +466,14 @@ async function updateAllBlocks(page, kind, blockText, optionName, fieldName, scr
                 await selectBotFlowPesquisaSatisfacao(page, config.clinicName);
             }
             else {
-                if (await isPropertiesSelectionCorrect(page, optionName)) {
+                if (await isPropertiesSelectionCorrectForField(page, optionName, fieldName)) {
                     (0, utils_js_1.ok)(`Campo ${fieldLabel} ja esta preenchido com ${optionName}. Nenhuma alteracao necessaria.`);
                     (0, utils_js_1.info)("[SKIP] Seguindo para o proximo bloco.");
                     continue;
                 }
                 await selectPropertiesOption(page, optionName, fieldName);
             }
-            const isFieldCorrect = await isPropertiesSelectionCorrect(page, optionName);
+            const isFieldCorrect = await isPropertiesSelectionCorrectForField(page, optionName, fieldName);
             await saveChangesIfNeeded(page, {
                 clinicName: config.clinicName,
                 url: config.workflowUrl,
@@ -1015,7 +1015,7 @@ async function selectPropertiesOption(page, optionName, fieldName) {
     await pauseIfEnabled(`selecionar ${fieldName} "${optionName}"`);
     (0, utils_js_1.info)(`Selecionando ${fieldName} ${optionName}`);
     await selectPropertiesAutocompleteOption(page, optionName, fieldName);
-    if (!(await isPropertiesSelectionCorrect(page, optionName))) {
+    if (!(await isPropertiesSelectionCorrectForField(page, optionName, fieldName))) {
         throw new AutomationError(`A opcao "${optionName}" nao ficou selecionada.`, {
             fieldName: getFieldLabel(fieldName),
             expectedValue: optionName
@@ -1030,11 +1030,12 @@ async function selectPropertiesAutocompleteOption(page, optionName, fieldName) {
     await input.click();
     await input.fill(optionName);
     const containsIgnoringNumber = shouldSelectContainsIgnoringNumber(optionName);
+    const exactIgnoringNumber = shouldSelectExactIgnoringNumber(optionName);
     await waitAndSelectOptionFast(page, {
         fieldText: getFieldLabel(fieldName),
         expectedValue: optionName,
         excludeValues: getOptionExcludeValues(optionName),
-        matchMode: containsIgnoringNumber ? "containsIgnoringNumber" : "exact"
+        matchMode: exactIgnoringNumber ? "exactIgnoringNumber" : containsIgnoringNumber ? "containsIgnoringNumber" : "exact"
     });
     await page.keyboard.press("Escape").catch(() => undefined);
 }
@@ -1053,6 +1054,7 @@ async function waitAndSelectOptionFast(page, params) {
         lastOptions = options;
         const match = findMatchingOption(options, params.expectedValue, matchMode, params.excludeValues);
         if (match) {
+            assertSelectedOptionAllowed(params.expectedValue, match.text, matchMode);
             (0, utils_js_1.ok)(`Opcao encontrada: ${match.text}. Clicando imediatamente.`);
             await match.locator.click();
             await waitStep("apos selecionar opcao", delayAfterSelectMs);
@@ -1072,11 +1074,15 @@ async function waitAndSelectOptionFast(page, params) {
     });
 }
 function findMatchingOption(options, expectedValue, matchMode, excludeValues = []) {
-    const expected = normalizeText(matchMode === "containsIgnoringNumber" ? removeLeadingNumberPrefix(expectedValue) : expectedValue);
+    const expected = normalizeText(matchMode === "containsIgnoringNumber" || matchMode === "exactIgnoringNumber"
+        ? removeLeadingNumberPrefix(expectedValue)
+        : expectedValue);
     const normalizedExcludes = excludeValues.map((value) => normalizeText(removeLeadingNumberPrefix(value)));
     const candidates = options
         .map((option) => {
-        const optionText = matchMode === "containsIgnoringNumber" ? removeLeadingNumberPrefix(option.text) : option.text;
+        const optionText = matchMode === "containsIgnoringNumber" || matchMode === "exactIgnoringNumber"
+            ? removeLeadingNumberPrefix(option.text)
+            : option.text;
         return {
             option,
             normalized: normalizeText(optionText)
@@ -1198,6 +1204,30 @@ async function isPropertiesSelectionCorrect(page, expected) {
         .filter(Boolean)
         .join(" ")).catch(() => "");
     return normalizeForMatch(`${propertiesText} ${inputValues}`).includes(normalizeForMatch(expected));
+}
+async function isPropertiesSelectionCorrectForField(page, expected, fieldName) {
+    const normalizedField = normalizeText(getFieldLabel(fieldName));
+    const normalizedExpected = normalizeActionText(expected);
+    if (normalizedField === "acao" && shouldValidateActionExactly(expected)) {
+        const currentValue = await getPropertiesCurrentValue(page);
+        const normalizedCurrent = normalizeActionText(currentValue);
+        if (normalizedCurrent === normalizedExpected) {
+            (0, utils_js_1.ok)(`Campo Acao validado como: ${currentValue || expected}`);
+            return true;
+        }
+        return false;
+    }
+    return isPropertiesSelectionCorrect(page, expected);
+}
+async function getPropertiesCurrentValue(page) {
+    const inputValues = await page.locator(".properties input").evaluateAll((inputs) => inputs
+        .map((input) => input instanceof HTMLInputElement ? input.value : "")
+        .filter(Boolean)
+        .join(" ")).catch(() => "");
+    if (normalizeVisibleText(inputValues)) {
+        return normalizeVisibleText(inputValues);
+    }
+    return normalizeVisibleText(await page.locator(".properties").innerText().catch(() => ""));
 }
 async function selectAllOpenAutocompleteOptions(page, listbox) {
     const seen = new Set();
@@ -1582,12 +1612,38 @@ function getFieldLabel(fieldName) {
 function removeLeadingNumberPrefix(text) {
     return text.replace(/^\s*\d+\s*-\s*/, "").trim();
 }
+function normalizeActionText(text) {
+    return removeLeadingNumberPrefix(text)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+function shouldSelectExactIgnoringNumber(optionName) {
+    return normalizeActionText(optionName) === "contato ativo livre";
+}
+function shouldValidateActionExactly(optionName) {
+    return normalizeActionText(optionName) === "contato ativo livre";
+}
+function assertSelectedOptionAllowed(expectedValue, selectedText, matchMode) {
+    if (matchMode !== "exactIgnoringNumber") {
+        return;
+    }
+    const expected = normalizeActionText(expectedValue);
+    const selected = normalizeActionText(selectedText);
+    if (selected !== expected) {
+        throw new AutomationError(`Protecao acionada: tentativa de selecionar opcao errada. Esperado: ${expectedValue} | Encontrado: ${selectedText}`, {
+            fieldName: "Acao",
+            expectedValue
+        });
+    }
+}
 function shouldSelectContainsIgnoringNumber(optionName) {
     const normalized = normalizeText(removeLeadingNumberPrefix(optionName));
     return normalized === "realizar agendamento" ||
         normalized === "finalizar atendimento" ||
         normalized === "finalizar atendimento ativo" ||
-        normalized === "contato ativo livre" ||
         normalized === "voltar ao menu anterior" ||
         normalized === "contato ativo";
 }
