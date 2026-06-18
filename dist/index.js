@@ -54,6 +54,7 @@ async function main() {
         await generateFinalReport(results);
         await generateTimingReport(results);
         printFinalReportSummary(results);
+        printRunCompletionMessage(results, targets.length);
         logTimingSummary(results);
     }
     finally {
@@ -484,6 +485,18 @@ function printFinalReportSummary(results) {
     console.log(`Erro: ${errors}`);
     console.log(`Ja configurado: ${alreadyConfigured}`);
     console.log("Publicados: 0");
+}
+function printRunCompletionMessage(results, totalTargets) {
+    const success = results.filter((result) => result.status === "success").length;
+    const errors = results.filter((result) => result.status === "error").length;
+    const alreadyConfigured = results.filter((result) => result.status === "already_configured" || result.status === "skipped_already_done").length;
+    if (results.length >= totalTargets) {
+        (0, utils_js_1.ok)(`Bot rodou em todas as clinicas da lista. Processadas: ${results.length}/${totalTargets}. ` +
+            `Sucesso: ${success}. Erro: ${errors}. Ja configuradas: ${alreadyConfigured}.`);
+        return;
+    }
+    console.log(`[INFO] Bot encerrou antes de rodar todas as clinicas. Processadas: ${results.length}/${totalTargets}. ` +
+        `Sucesso: ${success}. Erro: ${errors}. Ja configuradas: ${alreadyConfigured}.`);
 }
 function sanitizeFileName(value) {
     return value

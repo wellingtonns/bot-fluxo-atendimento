@@ -1,0 +1,19 @@
+Boa Vista e Boa Vista Oeste|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf8fa8f3643ac484f3d
+Botucatu|https://amorsaude.cvortex.com/wos/service-flow/6a2dad96fa8f3643ac484f0b
+Bragança|https://amorsaude.cvortex.com/wos/service-flow/6a2dadffc6704b6d3dd6a0df
+Bragança Paulista|https://amorsaude.cvortex.com/wos/service-flow/6a2dacebe678af7c400b31ca
+Brusque|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb0c6704b6d3dd6a0c2
+Cabo de Santo Agostinho|https://amorsaude.cvortex.com/wos/service-flow/6a2dadfde678af7c400b3242
+Caçapava|https://amorsaude.cvortex.com/wos/service-flow/6a2dad83e678af7c400b320b
+Cáceres|https://amorsaude.cvortex.com/wos/service-flow/6a2daddbc6704b6d3dd6a0d2
+Cachoeirinha|https://amorsaude.cvortex.com/wos/service-flow/6a2dadc2fa8f3643ac484f1f
+Cachoeiro de Itapemirim|https://amorsaude.cvortex.com/wos/service-flow/6a2dae45e678af7c400b325d
+Cacoal|https://amorsaude.cvortex.com/wos/service-flow/6a2dadcefa8f3643ac484f25
+Caldas Novas|https://amorsaude.cvortex.com/wos/service-flow/6a2dad9ae678af7c400b3214
+Camaçari|https://amorsaude.cvortex.com/wos/service-flow/6a2dad24fa8f3643ac484ed1
+Camaragibe|https://amorsaude.cvortex.com/wos/service-flow/6a2dad41fa8f3643ac484ee4
+Cambé|https://amorsaude.cvortex.com/wos/service-flow/6a2dadcde678af7c400b322b
+Camocim|https://amorsaude.cvortex.com/wos/service-flow/6a2dae07c6704b6d3dd6a0e2
+Campina Grande|https://amorsaude.cvortex.com/wos/service-flow/6a2dad48c6704b6d3dd6a094
+Campinas Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad44fa8f3643ac484ee5
+Campinas Sul|https://amorsaude.cvortex.com/wos/service-flow/6a2dadcde678af7c400b322c
