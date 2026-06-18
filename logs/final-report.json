@@ -1,0 +1,62 @@
+[
+  {
+    "clinica": "Batatais",
+    "url": "https://amorsaude.cvortex.com/wos/service-flow/6a2dacfcc6704b6d3dd6a07b",
+    "status": "error",
+    "etapaErro": "Confirmacao Aguardando Acao",
+    "mensagemErro": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[role=\\'option\\']').first() to be visible\u001b[22m\n",
+    "screenshotFinal": "",
+    "salvouWorkflow": false,
+    "publicouWorkflow": false
+  },
+  {
+    "clinica": "Bebedouro",
+    "url": "https://amorsaude.cvortex.com/wos/service-flow/6a2dad21c6704b6d3dd6a089",
+    "status": "error",
+    "etapaErro": "Iniciar / Tipo de Caso",
+    "mensagemErro": "Botao \"Salvar Alteracoes\" nao encontrado.",
+    "screenshotFinal": "",
+    "salvouWorkflow": false,
+    "publicouWorkflow": false
+  },
+  {
+    "clinica": "Belém Bengui e Icoaraci",
+    "url": "https://amorsaude.cvortex.com/wos/service-flow/6a2dadfbe678af7c400b3241",
+    "status": "error",
+    "etapaErro": "Iniciar / Tipo de Caso",
+    "mensagemErro": "Botao \"Salvar Alteracoes\" nao encontrado.",
+    "screenshotFinal": "",
+    "salvouWorkflow": false,
+    "publicouWorkflow": false
+  },
+  {
+    "clinica": "Betim",
+    "url": "https://amorsaude.cvortex.com/wos/service-flow/6a2dad16fa8f3643ac484ecc",
+    "status": "error",
+    "etapaErro": "Iniciar / Tipo de Caso",
+    "mensagemErro": "Botao \"Salvar Alteracoes\" nao encontrado.",
+    "screenshotFinal": "",
+    "salvouWorkflow": false,
+    "publicouWorkflow": false
+  },
+  {
+    "clinica": "BH Barreiro",
+    "url": "https://amorsaude.cvortex.com/wos/service-flow/6a2dadb9c6704b6d3dd6a0c7",
+    "status": "error",
+    "etapaErro": "Iniciar / Tipo de Caso",
+    "mensagemErro": "Botao \"Salvar Alteracoes\" nao encontrado.",
+    "screenshotFinal": "",
+    "salvouWorkflow": false,
+    "publicouWorkflow": false
+  },
+  {
+    "clinica": "BH Oeste",
+    "url": "https://amorsaude.cvortex.com/wos/service-flow/6a2dada8c6704b6d3dd6a0bf",
+    "status": "success",
+    "etapaErro": "",
+    "mensagemErro": "",
+    "screenshotFinal": "screenshots/sucesso/BH-Oeste-final.png",
+    "salvouWorkflow": true,
+    "publicouWorkflow": false
+  }
+]

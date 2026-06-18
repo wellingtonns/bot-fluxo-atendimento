@@ -1,0 +1,21 @@
+{
+  "name": "botcvortex",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bot de automacao web para cVortex WorkFlow Studio.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "playwright": "^1.49.1",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2"
+  }
+}

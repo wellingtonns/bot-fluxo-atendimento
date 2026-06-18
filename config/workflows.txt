@@ -1,0 +1,6 @@
+Batatais|https://amorsaude.cvortex.com/wos/service-flow/6a2dacfcc6704b6d3dd6a07b
+Bebedouro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad21c6704b6d3dd6a089
+Belém Bengui e Icoaraci|https://amorsaude.cvortex.com/wos/service-flow/6a2dadfbe678af7c400b3241
+Betim|https://amorsaude.cvortex.com/wos/service-flow/6a2dad16fa8f3643ac484ecc
+BH Barreiro|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb9c6704b6d3dd6a0c7
+BH Oeste|https://amorsaude.cvortex.com/wos/service-flow/6a2dada8c6704b6d3dd6a0bf
