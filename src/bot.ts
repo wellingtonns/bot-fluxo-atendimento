@@ -459,8 +459,8 @@ export async function updateAllPresidenteContatoAtivoBlocks(page: Page): Promise
   await updateAllStatusBlocks(
     page,
     { includes: ["Presidente Prudente", "Contato Ativo"] },
-    "Contato Ativo",
-    "contato-ativo"
+    "Contato Ativo Livre",
+    "contato-ativo-livre-status"
   );
 }
 

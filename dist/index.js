@@ -419,7 +419,7 @@ async function runConfiguredRules(page, result) {
     await runStep(result, "Aguardando Resposta Paciente", () => (0, bot_js_1.updateAllPresidenteAguardandoRespostaPacienteBlocks)(page));
     await runStep(result, "Confirmacao Aguardando Acao", () => (0, bot_js_1.updateAllPresidenteConfirmacaoAguardandoAcaoBlocks)(page));
     await runStep(result, "Agendado", () => (0, bot_js_1.updateAllPresidenteAgendadoBlocks)(page));
-    await runStep(result, "Contato Ativo", () => (0, bot_js_1.updateAllPresidenteContatoAtivoBlocks)(page));
+    await runStep(result, "Contato Ativo Livre - Status", () => (0, bot_js_1.updateAllPresidenteContatoAtivoBlocks)(page));
     await runStep(result, "Voltar ao Menu Anterior", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Voltar ao Menu Anterior"] }, "Voltar ao Menu Anterior", "voltar-menu-anterior"));
     await runStep(result, "Contato Ativo Livre", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo Livre", "contato-ativo-livre"));
 }

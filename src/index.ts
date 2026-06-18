@@ -552,7 +552,7 @@ async function runConfiguredRules(page: Page, result: WorkflowResult): Promise<v
   await runStep(result, "Aguardando Resposta Paciente", () => updateAllPresidenteAguardandoRespostaPacienteBlocks(page));
   await runStep(result, "Confirmacao Aguardando Acao", () => updateAllPresidenteConfirmacaoAguardandoAcaoBlocks(page));
   await runStep(result, "Agendado", () => updateAllPresidenteAgendadoBlocks(page));
-  await runStep(result, "Contato Ativo", () => updateAllPresidenteContatoAtivoBlocks(page));
+  await runStep(result, "Contato Ativo Livre - Status", () => updateAllPresidenteContatoAtivoBlocks(page));
   await runStep(result, "Voltar ao Menu Anterior", () => updateActionBlock(page, { includes: ["Voltar ao Menu Anterior"] }, "Voltar ao Menu Anterior", "voltar-menu-anterior"));
   await runStep(result, "Contato Ativo Livre", () => updateActionBlock(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo Livre", "contato-ativo-livre"));
 }

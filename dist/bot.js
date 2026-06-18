@@ -350,7 +350,7 @@ async function updateAllPresidenteAgendadoBlocks(page) {
     await updateAllStatusBlocks(page, { includes: ["Presidente Prudente", "Agendado"] }, "Agendado", "agendado");
 }
 async function updateAllPresidenteContatoAtivoBlocks(page) {
-    await updateAllStatusBlocks(page, { includes: ["Presidente Prudente", "Contato Ativo"] }, "Contato Ativo", "contato-ativo");
+    await updateAllStatusBlocks(page, { includes: ["Presidente Prudente", "Contato Ativo"] }, "Contato Ativo Livre", "contato-ativo-livre-status");
 }
 async function updateAllFinalizadoBlocks(page) {
     await updateAllStatusBlocks(page, { includes: ["Finalizado"] }, "Finalizado", "finalizado");
