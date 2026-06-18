@@ -5,6 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AutomationError = void 0;
 exports.setBotConfig = setBotConfig;
+exports.resetWorkflowChanged = resetWorkflowChanged;
+exports.hasWorkflowChanges = hasWorkflowChanges;
+exports.setCurrentRuleField = setCurrentRuleField;
+exports.getTimingForRule = getTimingForRule;
 exports.waitStep = waitStep;
 exports.connectToExistingChrome = connectToExistingChrome;
 exports.openWorkflow = openWorkflow;
@@ -32,20 +36,24 @@ exports.updateAllTransferToBotBlocks = updateAllTransferToBotBlocks;
 exports.saveWorkflow = saveWorkflow;
 exports.saveWorkflowOnly = saveWorkflowOnly;
 exports.assertPublishIsDisabled = assertPublishIsDisabled;
+exports.detectWorkflowAlreadyProcessed = detectWorkflowAlreadyProcessed;
 exports.extractClinicNameFromWorkflowTitle = extractClinicNameFromWorkflowTitle;
 exports.selectBotFlowPesquisaSatisfacao = selectBotFlowPesquisaSatisfacao;
 exports.findEnabledBotFlowField = findEnabledBotFlowField;
+exports.scorePesquisaSatisfacaoOption = scorePesquisaSatisfacaoOption;
 exports.waitUntilFieldEnabled = waitUntilFieldEnabled;
 exports.waitForFieldEnabled = waitForFieldEnabled;
 exports.getCurrentBotFlowValue = getCurrentBotFlowValue;
 exports.isBotFlowAlreadyCorrect = isBotFlowAlreadyCorrect;
 exports.waitForOptionsToLoad = waitForOptionsToLoad;
+exports.waitAndSelectOptionFast = waitAndSelectOptionFast;
 exports.saveChanges = saveChanges;
 exports.saveChangesIfNeeded = saveChangesIfNeeded;
 exports.takeScreenshot = takeScreenshot;
 exports.dumpVisibleTextsForDebug = dumpVisibleTextsForDebug;
 exports.pauseIfEnabled = pauseIfEnabled;
 exports.finishBrowserConnection = finishBrowserConnection;
+exports.removeLeadingNumberPrefix = removeLeadingNumberPrefix;
 const node_path_1 = __importDefault(require("node:path"));
 const promises_1 = require("node:readline/promises");
 const node_process_1 = require("node:process");
@@ -62,14 +70,69 @@ class AutomationError extends Error {
 }
 exports.AutomationError = AutomationError;
 let activeConfig = null;
+let activeFieldText = "";
+let activeWorkflowChanged = false;
 function setBotConfig(config) {
     activeConfig = config;
+}
+function resetWorkflowChanged() {
+    activeWorkflowChanged = false;
+}
+function hasWorkflowChanges() {
+    return activeWorkflowChanged;
+}
+function markWorkflowChanged() {
+    activeWorkflowChanged = true;
 }
 function getConfig() {
     if (!activeConfig) {
         throw new Error("Configuracao do bot nao inicializada.");
     }
     return activeConfig;
+}
+function setCurrentRuleField(fieldText = "") {
+    activeFieldText = fieldText;
+    if (!fieldText) {
+        return;
+    }
+    const timing = getTimingForRule({ fieldText });
+    (0, utils_js_1.info)(`Campo atual: ${fieldText}`);
+    if (normalizeText(fieldText) === "acao") {
+        (0, utils_js_1.info)("Usando timing rapido para Acao");
+    }
+    else {
+        (0, utils_js_1.info)(`Usando timing padrao ${getConfig().executionMode} para campo sensivel`);
+    }
+}
+function getTimingForRule(rule) {
+    const config = getConfig();
+    const field = normalizeText(rule.fieldText || "");
+    const defaultTiming = {
+        delayAfterPageLoadMs: config.delayAfterPageLoadMs,
+        delayAfterBlockClickMs: config.delayAfterBlockClickMs,
+        delayAfterFieldClickMs: config.delayAfterFieldClickMs,
+        delayAfterTypingMs: config.delayAfterTypingMs,
+        delayAfterOptionSelectMs: config.delayAfterOptionSelectMs,
+        delayAfterSaveChangesMs: config.delayAfterSaveChangesMs,
+        delayAfterSaveWorkflowMs: config.delayAfterSaveWorkflowMs,
+        waitForOptionsTimeoutMs: config.waitForOptionsTimeoutMs,
+        waitForFieldEnabledTimeoutMs: config.waitForFieldEnabledTimeoutMs,
+        waitAfterBlockClickOnRetryMs: config.waitAfterBlockClickOnRetryMs
+    };
+    if (field === "acao") {
+        return {
+            ...defaultTiming,
+            delayAfterBlockClickMs: config.actionDelayAfterBlockClickMs,
+            delayAfterFieldClickMs: config.actionDelayAfterFieldClickMs,
+            delayAfterOptionSelectMs: config.actionDelayAfterOptionSelectMs,
+            delayAfterSaveChangesMs: config.actionDelayAfterSaveChangesMs,
+            waitForOptionsTimeoutMs: config.actionWaitForOptionsTimeoutMs
+        };
+    }
+    return defaultTiming;
+}
+function getCurrentTiming() {
+    return getTimingForRule({ fieldText: activeFieldText });
 }
 async function waitStep(reason, ms) {
     if (ms <= 0) {
@@ -104,7 +167,7 @@ async function openWorkflow(page, workflowUrl) {
     await page.bringToFront();
     (0, utils_js_1.info)(`Aguardando ${Math.round(config.workflowRenderWaitMs / 1000)}s para o workflow renderizar`);
     await page.waitForTimeout(config.workflowRenderWaitMs);
-    await waitStep("apos carregar workflow", config.delayAfterPageLoadMs);
+    await waitStep("apos carregar workflow", getTimingForRule({}).delayAfterPageLoadMs);
     await page.bringToFront();
     (0, utils_js_1.ok)("Workflow aberto");
 }
@@ -147,7 +210,7 @@ async function clickStartBlock(page) {
     (0, utils_js_1.ok)("Bloco Iniciar encontrado");
     await startBlock.click();
     (0, utils_js_1.ok)("Bloco Iniciar clicado");
-    await waitStep("apos clicar no bloco", getConfig().delayAfterBlockClickMs);
+    await waitStep("apos clicar no bloco", getCurrentTiming().delayAfterBlockClickMs);
     await page.getByText(/Tipo de Caso/i).first().waitFor({ state: "visible", timeout: 20000 });
 }
 async function openTipoCasoField(page) {
@@ -159,7 +222,7 @@ async function openTipoCasoField(page) {
     if (await labelInput.first().isVisible().catch(() => false)) {
         await waitForFieldEnabled(page, "Tipo de Caso").catch(() => undefined);
         await labelInput.first().click();
-        await waitStep("apos clicar no campo", getConfig().delayAfterFieldClickMs);
+        await waitStep("apos clicar no campo", getCurrentTiming().delayAfterFieldClickMs);
         (0, utils_js_1.ok)("Campo Tipo de Caso aberto");
         return;
     }
@@ -175,7 +238,7 @@ async function openTipoCasoField(page) {
     }
     await waitForFieldEnabled(page, "Tipo de Caso").catch(() => undefined);
     await field.click();
-    await waitStep("apos clicar no campo", getConfig().delayAfterFieldClickMs);
+    await waitStep("apos clicar no campo", getCurrentTiming().delayAfterFieldClickMs);
     (0, utils_js_1.ok)("Campo Tipo de Caso aberto");
 }
 async function selectAllTipoCasoOptions(page) {
@@ -185,13 +248,13 @@ async function selectAllTipoCasoOptions(page) {
     const listbox = page.locator("[role='listbox']").last();
     if (await listbox.isVisible().catch(() => false)) {
         await selectAllOpenAutocompleteOptions(page, listbox);
-        await waitStep("apos selecionar opcao", getConfig().delayAfterOptionSelectMs);
+        await waitStep("apos selecionar opcao", getCurrentTiming().delayAfterOptionSelectMs);
         return;
     }
     const select = await (0, utils_js_1.firstVisible)(page.locator("select").filter({ hasText: /Tipo de Caso/i }));
     if (select) {
         await selectAllNativeSelectOptions(select);
-        await waitStep("apos selecionar opcao", getConfig().delayAfterOptionSelectMs);
+        await waitStep("apos selecionar opcao", getCurrentTiming().delayAfterOptionSelectMs);
         return;
     }
     await tryClickSelectAllOption(page);
@@ -235,7 +298,7 @@ async function selectAllTipoCasoOptions(page) {
         }
     }
     await page.keyboard.press("Escape").catch(() => undefined);
-    await waitStep("apos selecionar opcao", getConfig().delayAfterOptionSelectMs);
+    await waitStep("apos selecionar opcao", getCurrentTiming().delayAfterOptionSelectMs);
     (0, utils_js_1.ok)(`Total de opcoes encontradas: ${seen.size}`);
     (0, utils_js_1.ok)(`Opcoes ja marcadas: ${alreadyChecked}`);
     (0, utils_js_1.ok)(`Opcoes marcadas agora: ${checkedNow}`);
@@ -334,7 +397,7 @@ async function saveWorkflowOnly(page) {
     await saveButton.click();
     (0, utils_js_1.ok)("Salvar Workflow clicado");
     await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-    await waitStep("apos salvar workflow", getConfig().delayAfterSaveWorkflowMs);
+    await waitStep("apos salvar workflow", getTimingForRule({}).delayAfterSaveWorkflowMs);
     (0, utils_js_1.ok)("Workflow salvo sem publicar");
 }
 function assertPublishIsDisabled(buttonText) {
@@ -363,6 +426,17 @@ async function updateAllBlocks(page, kind, blockText, optionName, fieldName, scr
     const total = nodeIds.length;
     (0, utils_js_1.info)(`Foram encontrados ${total} blocos para selecionar "${optionName}"`);
     if (!total) {
+        if (isPresidentPrudenteLegacyRule({ name: blockText.includes.join(" "), blockText: blockText.includes.join(" ") })) {
+            const already = await isAlreadyConfigured(page, {
+                name: blockText.includes.join(" "),
+                blockText: blockText.includes.join(" "),
+                value: optionName
+            });
+            if (already.alreadyConfigured) {
+                console.log(`[SKIP] ${blockText.includes.join(" ")}: ${already.reason}`);
+                return;
+            }
+        }
         throw new AutomationError(`Nenhum bloco encontrado para: ${blockText.includes.join(" ")}`, {
             blockName: blockText.includes.join(" ")
         });
@@ -371,31 +445,106 @@ async function updateAllBlocks(page, kind, blockText, optionName, fieldName, scr
         const step = index + 1;
         const config = getConfig();
         const debugName = kind === "transferToBot" ? blockText.includes.join(" ") : `${optionName} ${step}`;
-        (0, utils_js_1.info)(`Atualizando bloco ${step}/${total}: ${optionName}`);
-        await clickWorkflowNodeById(page, kind, nodeId, debugName);
-        await waitForPropertiesPanel(page, kind === "status" ? /Propriedades de Status/i : /Propriedades d/i);
-        if (config.attemptNumber > 1) {
-            (0, utils_js_1.info)(`Segunda tentativa: aguardando ${config.waitAfterBlockClickOnRetryMs}ms para o painel carregar`);
-            await page.waitForTimeout(config.waitAfterBlockClickOnRetryMs);
-        }
-        if (kind === "transferToBot" && isPesquisaSatisfacaoSearch(optionName)) {
-            await selectBotFlowPesquisaSatisfacao(page, config.clinicName);
-        }
-        else {
-            await selectPropertiesOption(page, optionName, fieldName);
-        }
         const fieldLabel = kind === "transferToBot" ? "Fluxo de bot" : getFieldLabel(fieldName);
-        const isFieldCorrect = await isPropertiesSelectionCorrect(page, optionName);
-        await saveChangesIfNeeded(page, {
-            clinicName: config.clinicName,
-            url: config.workflowUrl,
-            blockName: debugName,
-            fieldName: fieldLabel,
-            expectedValue: optionName,
-            isFieldCorrect
-        });
-        await takeScreenshot(page, `${screenshotPrefix}-${step}-salvo.png`);
+        setCurrentRuleField(fieldLabel);
+        try {
+            (0, utils_js_1.info)(`Atualizando bloco ${step}/${total}: ${optionName}`);
+            await clickWorkflowNodeById(page, kind, nodeId, debugName);
+            await waitForPropertiesPanel(page, kind === "status" ? /Propriedades de Status/i : /Propriedades d/i);
+            if (config.attemptNumber > 1) {
+                const retryWaitMs = getCurrentTiming().waitAfterBlockClickOnRetryMs;
+                (0, utils_js_1.info)(`Segunda tentativa: aguardando ${retryWaitMs}ms para o painel carregar`);
+                await page.waitForTimeout(retryWaitMs);
+            }
+            if (kind === "transferToBot" && isPesquisaSatisfacaoSearch(optionName)) {
+                const currentValue = await getCurrentBotFlowValue(page).catch(() => "");
+                if (isBotFlowAlreadyCorrect(currentValue, config.clinicName)) {
+                    (0, utils_js_1.ok)(`Campo Fluxo de bot ja esta preenchido com ${currentValue}. Nenhuma alteracao necessaria.`);
+                    (0, utils_js_1.info)("[SKIP] Seguindo para o proximo bloco.");
+                    continue;
+                }
+                await selectBotFlowPesquisaSatisfacao(page, config.clinicName);
+            }
+            else {
+                if (await isPropertiesSelectionCorrect(page, optionName)) {
+                    (0, utils_js_1.ok)(`Campo ${fieldLabel} ja esta preenchido com ${optionName}. Nenhuma alteracao necessaria.`);
+                    (0, utils_js_1.info)("[SKIP] Seguindo para o proximo bloco.");
+                    continue;
+                }
+                await selectPropertiesOption(page, optionName, fieldName);
+            }
+            const isFieldCorrect = await isPropertiesSelectionCorrect(page, optionName);
+            await saveChangesIfNeeded(page, {
+                clinicName: config.clinicName,
+                url: config.workflowUrl,
+                blockName: debugName,
+                fieldName: fieldLabel,
+                expectedValue: optionName,
+                isFieldCorrect
+            });
+            await takeScreenshot(page, `${screenshotPrefix}-${step}-salvo.png`);
+        }
+        finally {
+            setCurrentRuleField();
+        }
     }
+}
+async function detectWorkflowAlreadyProcessed(page, clinicName) {
+    (0, utils_js_1.info)("Verificando se workflow ja foi processado");
+    const bodyText = normalizeText(await page.locator("body").innerText().catch(() => ""));
+    if (bodyText.includes("presidente prudente")) {
+        return {
+            alreadyConfigured: false,
+            reason: "Ainda existem blocos legados Presidente Prudente"
+        };
+    }
+    (0, utils_js_1.ok)("Nenhum bloco legado Presidente Prudente encontrado");
+    const finalValues = [
+        "Aguardando Atendimento",
+        "Em Atendimento",
+        "Aguardando Resposta Paciente",
+        "Confirmacao Aguardando Acao",
+        "Agendado",
+        "Contato Ativo",
+        "Contato Ativo Livre",
+        "Finalizado",
+        "Tabulacao Subcategoria",
+        "Subcategoria",
+        "Tabulacao Conduta",
+        "Conduta Profissional"
+    ];
+    const foundValues = finalValues.filter((value) => bodyText.includes(normalizeText(value)));
+    if (foundValues.length >= 6) {
+        (0, utils_js_1.ok)("Valores finais encontrados no canvas");
+        return {
+            alreadyConfigured: true,
+            reason: "Workflow aparenta ja estar configurado. Nenhum bloco legado Presidente Prudente encontrado."
+        };
+    }
+    return {
+        alreadyConfigured: false,
+        reason: `Valores finais insuficientes encontrados: ${foundValues.join(", ") || "nenhum"}`
+    };
+}
+function isPresidentPrudenteLegacyRule(rule) {
+    const name = normalizeText(rule.name || "");
+    const blockText = normalizeText(rule.blockText || "");
+    return name.includes("presidente prudente") || blockText.includes("presidente prudente");
+}
+async function isAlreadyConfigured(page, rule) {
+    const bodyText = normalizeText(await page.locator("body").innerText().catch(() => ""));
+    const expected = normalizeText(rule.value);
+    const saveButton = await findSaveChangesButton(page);
+    if (bodyText.includes(expected) && !saveButton) {
+        return {
+            alreadyConfigured: true,
+            reason: "Bloco antigo nao encontrado, mas valor final ja esta presente"
+        };
+    }
+    return {
+        alreadyConfigured: false,
+        reason: "Valor final esperado nao foi encontrado ou ha alteracoes pendentes"
+    };
 }
 async function getWorkflowNodeIdsByText(page, kind, matcher) {
     const locator = page.locator(nodeSelector(kind));
@@ -445,50 +594,103 @@ async function selectBotFlowPesquisaSatisfacao(page, clinicName) {
     }
     (0, utils_js_1.info)("Preenchendo Fluxo de bot");
     await input.click();
-    await waitStep("apos clicar no campo", getConfig().delayAfterFieldClickMs);
+    await waitStep("apos clicar no campo", getCurrentTiming().delayAfterFieldClickMs);
     await input.press("Control+A").catch(() => undefined);
     await input.press("Backspace").catch(() => undefined);
     (0, utils_js_1.info)('Digitando "pesq"');
     await input.fill("pesq");
-    await waitStep("apos digitar no campo", getConfig().delayAfterTypingMs);
-    const options = await waitForBotFlowOptions(page);
-    (0, utils_js_1.info)("Opcoes encontradas:");
-    for (const option of options) {
-        console.log(`- ${option.text}`);
-    }
-    const bestOption = findBestPesquisaSatisfacaoOption(options.map((option) => option.text), selectedClinicName);
-    if (!bestOption) {
-        await dumpVisiblePanelTexts(page);
-        throw new AutomationError(`Nenhuma opcao de Pesquisa de Satisfacao encontrada para a clinica ${selectedClinicName || "(nao identificada)"}. ` +
-            `Opcoes encontradas: ${options.map((option) => option.text).join(" | ")}`, {
-            fieldName: "Fluxo de bot",
-            expectedValue: `${selectedClinicName || "(clinica nao identificada)"} - Pesquisa de Satisfacao`,
-            availableOptions: options.map((option) => option.text)
-        });
-    }
-    const selected = options.find((option) => normalizeText(option.text) === normalizeText(bestOption));
-    if (!selected) {
-        throw new AutomationError(`Opcao "${bestOption}" nao encontrada no Fluxo de bot.`, {
-            fieldName: "Fluxo de bot",
-            expectedValue: bestOption,
-            availableOptions: options.map((option) => option.text)
-        });
-    }
-    await selected.locator.click();
-    await waitStep("apos selecionar opcao", getConfig().delayAfterOptionSelectMs);
+    const bestOption = await waitAndSelectBotFlowPesquisaSatisfacaoFast(page, selectedClinicName);
     (0, utils_js_1.ok)(`Opcao selecionada: ${bestOption}`);
     await page.keyboard.press("Escape").catch(() => undefined);
     const updatedValue = await getCurrentBotFlowValue(page);
     if (!isBotFlowAlreadyCorrect(updatedValue, selectedClinicName)) {
+        const availableOptions = await collectBotFlowOptions(page);
         throw new AutomationError(`Campo "Fluxo de bot" nao ficou preenchido corretamente. Valor atual: ${updatedValue || "vazio"}`, {
             fieldName: "Fluxo de bot",
             expectedValue: bestOption,
-            availableOptions: options.map((option) => option.text)
+            availableOptions: availableOptions.map((option) => option.text)
         });
     }
 }
 async function findEnabledBotFlowField(page) {
     return waitUntilFieldEnabled(page, "Fluxo de bot", 3, 2000);
+}
+async function waitAndSelectBotFlowPesquisaSatisfacaoFast(page, clinicName) {
+    const config = getConfig();
+    const maxWaitMs = config.optionMaxWaitMs;
+    const pollIntervalMs = config.optionPollIntervalMs;
+    const stableMs = config.botFlowCollectOptionsStableMs;
+    const startedAt = Date.now();
+    let lastOptions = [];
+    const expectedValue = `${clinicName || "(clinica nao identificada)"} - Pesquisa de Satisfacao`;
+    (0, utils_js_1.info)(`Procurando opcao de Pesquisa de Satisfacao por ate ${maxWaitMs}ms`);
+    while (Date.now() - startedAt < maxWaitMs) {
+        const options = await collectBotFlowOptions(page);
+        lastOptions = options;
+        const candidates = getPesquisaSatisfacaoCandidates(options, clinicName);
+        if (candidates.length) {
+            (0, utils_js_1.info)(`Primeira opcao valida encontrada. Coletando opcoes por mais ${stableMs}ms`);
+            await page.waitForTimeout(stableMs);
+            const stableOptions = await collectBotFlowOptions(page);
+            lastOptions = stableOptions;
+            const stableCandidates = getPesquisaSatisfacaoCandidates(stableOptions, clinicName);
+            const selected = stableCandidates[0] ?? candidates[0];
+            logPesquisaSatisfacaoCandidates(stableCandidates.length ? stableCandidates : candidates, clinicName);
+            (0, utils_js_1.ok)(`Melhor opcao escolhida: ${selected.option.text}`);
+            await selected.option.locator.click();
+            return selected.option.text;
+        }
+        await page.waitForTimeout(pollIntervalMs);
+    }
+    await dumpVisiblePanelTexts(page);
+    throw new AutomationError(`Nenhuma opcao de Pesquisa de Satisfacao encontrada para a clinica ${clinicName || "(nao identificada)"}. ` +
+        `Opcoes encontradas: ${lastOptions.map((option) => option.text).join(" | ")}`, {
+        fieldName: "Fluxo de bot",
+        expectedValue,
+        availableOptions: lastOptions.map((option) => option.text)
+    });
+}
+function getPesquisaSatisfacaoCandidates(options, clinicName) {
+    return options
+        .map((option) => ({
+        option,
+        score: scorePesquisaSatisfacaoOption(option.text, clinicName)
+    }))
+        .filter((candidate) => candidate.score >= 0)
+        .sort((a, b) => b.score - a.score);
+}
+function logPesquisaSatisfacaoCandidates(candidates, clinicName) {
+    (0, utils_js_1.info)(`Candidatas de Pesquisa de Satisfacao para ${clinicName || "(clinica nao identificada)"}:`);
+    for (const candidate of candidates) {
+        console.log(` - ${candidate.option.text} | score=${candidate.score}`);
+    }
+}
+function scorePesquisaSatisfacaoOption(optionText, clinicName) {
+    const text = normalizeText(optionText);
+    const clinic = normalizeText(clinicName);
+    if (!clinic || !text.includes(clinic)) {
+        return -1;
+    }
+    if (!text.includes("pesquisa")) {
+        return -1;
+    }
+    if (!text.includes("satisfacao")) {
+        return -1;
+    }
+    let score = 10;
+    if (text.includes("amei") && text.includes("v2")) {
+        score += 100;
+    }
+    else if (text.includes("amei") && /(^|\D)2(\D|$)/.test(text)) {
+        score += 90;
+    }
+    else if (text.includes("v2")) {
+        score += 50;
+    }
+    else if (/satisfacao\s*2\b/.test(text) || /2$/.test(text)) {
+        score += 45;
+    }
+    return score;
 }
 async function findBotFlowInput(page, screenshotOnError = true) {
     const properties = page.locator(".properties");
@@ -512,7 +714,7 @@ async function findBotFlowInput(page, screenshotOnError = true) {
 async function waitUntilFieldEnabled(page, fieldName, maxAttempts, waitMs) {
     return waitForFieldEnabled(page, fieldName, maxAttempts * waitMs, waitMs);
 }
-async function waitForFieldEnabled(page, fieldName, timeoutMs = getConfig().waitForFieldEnabledTimeoutMs, intervalMs = 1000) {
+async function waitForFieldEnabled(page, fieldName, timeoutMs = getCurrentTiming().waitForFieldEnabledTimeoutMs, intervalMs = 1000) {
     const deadline = Date.now() + timeoutMs;
     let lastErrorMessage = "";
     let firstCheck = true;
@@ -637,7 +839,7 @@ function isBotFlowAlreadyCorrect(currentValue, clinicName) {
     return !normalizedClinic || normalizedValue.includes(normalizedClinic);
 }
 async function waitForBotFlowOptions(page) {
-    const timeoutMs = getConfig().waitForOptionsTimeoutMs;
+    const timeoutMs = getCurrentTiming().waitForOptionsTimeoutMs;
     const deadline = Date.now() + timeoutMs;
     while (Date.now() <= deadline) {
         const options = await collectBotFlowOptions(page);
@@ -648,14 +850,17 @@ async function waitForBotFlowOptions(page) {
     }
     throw new Error(`Opcoes do campo "Fluxo de bot" nao carregaram em ate ${timeoutMs}ms.`);
 }
-async function waitForOptionsToLoad(page, expectedText) {
-    const timeoutMs = getConfig().waitForOptionsTimeoutMs;
+async function waitForOptionsToLoad(page, expectedText, containsIgnoringNumber = false) {
+    const timeoutMs = getCurrentTiming().waitForOptionsTimeoutMs;
     const deadline = Date.now() + timeoutMs;
-    const expected = expectedText ? normalizeText(expectedText) : "";
+    const expected = expectedText ? normalizeText(removeLeadingNumberPrefix(expectedText)) : "";
     while (Date.now() <= deadline) {
         const options = await collectVisibleOptions(page);
         const matchingOptions = expected
-            ? options.filter((option) => normalizeText(option.text).includes(expected))
+            ? options.filter((option) => {
+                const optionText = containsIgnoringNumber ? removeLeadingNumberPrefix(option.text) : option.text;
+                return normalizeText(optionText).includes(expected);
+            })
             : options;
         if (matchingOptions.length) {
             return matchingOptions;
@@ -683,6 +888,9 @@ async function collectVisibleOptions(page) {
         for (let index = 0; index < Math.min(count, 200); index += 1) {
             const item = locator.nth(index);
             if (!(await item.isVisible().catch(() => false))) {
+                continue;
+            }
+            if (!(await item.isEnabled().catch(() => true))) {
                 continue;
             }
             const text = normalizeVisibleText(await item.innerText().catch(() => ""));
@@ -716,6 +924,9 @@ async function collectBotFlowOptions(page) {
             if (!(await item.isVisible().catch(() => false))) {
                 continue;
             }
+            if (!(await item.isEnabled().catch(() => true))) {
+                continue;
+            }
             const text = normalizeVisibleText(await item.innerText().catch(() => ""));
             const normalized = normalizeText(text);
             if (!isReasonableBotFlowOptionText(text)) {
@@ -731,6 +942,9 @@ async function collectBotFlowOptions(page) {
     for (let index = 0; index < Math.min(visibleTextCount, 200); index += 1) {
         const item = visibleTextCandidates.nth(index);
         if (!(await item.isVisible().catch(() => false))) {
+            continue;
+        }
+        if (!(await item.isEnabled().catch(() => true))) {
             continue;
         }
         const text = normalizeVisibleText(await item.innerText().catch(() => ""));
@@ -792,7 +1006,7 @@ async function clickWorkflowNode(page, text, debugName, baseLocator = page.locat
         });
     });
     (0, utils_js_1.ok)(`Bloco ${debugName} clicado`);
-    await waitStep("apos clicar no bloco", getConfig().delayAfterBlockClickMs);
+    await waitStep("apos clicar no bloco", getCurrentTiming().delayAfterBlockClickMs);
 }
 async function waitForPropertiesPanel(page, title) {
     await page.getByText(title).first().waitFor({ state: "visible", timeout: 20000 });
@@ -814,29 +1028,86 @@ async function selectPropertiesAutocompleteOption(page, optionName, fieldName) {
         .catch(() => page.locator(".properties input[type='text']").first());
     await input.waitFor({ state: "visible", timeout: 20000 });
     await input.click();
-    await waitStep("apos clicar no campo", getConfig().delayAfterFieldClickMs);
     await input.fill(optionName);
-    await waitStep("apos digitar no campo", getConfig().delayAfterTypingMs);
-    const options = page.locator("[role='option']");
-    await waitForAutocompleteOptions(page, input, options, optionName);
-    const optionIndex = await findOptionIndex(options, optionName);
-    if (optionIndex < 0) {
-        const availableOptions = await listOptionTexts(options);
-        console.log(`[ERRO] Opcoes disponiveis: ${availableOptions.join(" | ") || "(nenhuma opcao visivel)"}`);
-        throw new AutomationError(`Opcao nao encontrada: ${optionName}`, {
-            fieldName: getFieldLabel(fieldName),
-            expectedValue: optionName,
-            availableOptions
-        });
-    }
-    await options.nth(optionIndex).click();
-    await waitStep("apos selecionar opcao", getConfig().delayAfterOptionSelectMs);
+    const containsIgnoringNumber = shouldSelectContainsIgnoringNumber(optionName);
+    await waitAndSelectOptionFast(page, {
+        fieldText: getFieldLabel(fieldName),
+        expectedValue: optionName,
+        excludeValues: getOptionExcludeValues(optionName),
+        matchMode: containsIgnoringNumber ? "containsIgnoringNumber" : "exact"
+    });
     await page.keyboard.press("Escape").catch(() => undefined);
 }
-async function waitForAutocompleteOptions(page, input, options, expectedText) {
+async function waitAndSelectOptionFast(page, params) {
+    const config = getConfig();
+    const isActionField = normalizeText(params.fieldText) === "acao";
+    const maxWaitMs = params.maxWaitMs ?? (isActionField ? config.actionOptionMaxWaitMs : config.optionMaxWaitMs);
+    const pollIntervalMs = params.pollIntervalMs ?? (isActionField ? config.actionOptionPollIntervalMs : config.optionPollIntervalMs);
+    const delayAfterSelectMs = params.delayAfterSelectMs ?? (isActionField ? config.actionDelayAfterOptionSelectMs : config.delayAfterOptionSelectMs);
+    const matchMode = params.matchMode ?? "exact";
+    const startedAt = Date.now();
+    let lastOptions = [];
+    (0, utils_js_1.info)(`Procurando opcao "${params.expectedValue}" por ate ${maxWaitMs}ms`);
+    while (Date.now() - startedAt < maxWaitMs) {
+        const options = await getVisibleOptions(page);
+        lastOptions = options;
+        const match = findMatchingOption(options, params.expectedValue, matchMode, params.excludeValues);
+        if (match) {
+            (0, utils_js_1.ok)(`Opcao encontrada: ${match.text}. Clicando imediatamente.`);
+            await match.locator.click();
+            await waitStep("apos selecionar opcao", delayAfterSelectMs);
+            return match.text;
+        }
+        await page.waitForTimeout(pollIntervalMs);
+    }
+    console.log(`[ERRO] Opcao nao encontrada: ${params.expectedValue}`);
+    (0, utils_js_1.info)("Opcoes disponiveis:");
+    for (const option of lastOptions) {
+        console.log(`* ${option.text}`);
+    }
+    throw new AutomationError(`Opcao nao encontrada: ${params.expectedValue}`, {
+        fieldName: params.fieldText,
+        expectedValue: params.expectedValue,
+        availableOptions: lastOptions.map((option) => option.text)
+    });
+}
+function findMatchingOption(options, expectedValue, matchMode, excludeValues = []) {
+    const expected = normalizeText(matchMode === "containsIgnoringNumber" ? removeLeadingNumberPrefix(expectedValue) : expectedValue);
+    const normalizedExcludes = excludeValues.map((value) => normalizeText(removeLeadingNumberPrefix(value)));
+    const candidates = options
+        .map((option) => {
+        const optionText = matchMode === "containsIgnoringNumber" ? removeLeadingNumberPrefix(option.text) : option.text;
+        return {
+            option,
+            normalized: normalizeText(optionText)
+        };
+    })
+        .filter((candidate) => {
+        if (normalizedExcludes.some((excluded) => candidate.normalized.includes(excluded))) {
+            (0, utils_js_1.info)(`Ignorando opcao excluida: ${candidate.option.text}`);
+            return false;
+        }
+        return true;
+    });
+    const exactCandidate = candidates.find((candidate) => candidate.normalized === expected);
+    if (exactCandidate) {
+        return exactCandidate.option;
+    }
+    if (matchMode === "contains" || matchMode === "containsIgnoringNumber") {
+        const containsCandidate = candidates.find((candidate) => candidate.normalized.includes(expected));
+        if (containsCandidate) {
+            return containsCandidate.option;
+        }
+    }
+    return null;
+}
+async function getVisibleOptions(page) {
+    return collectVisibleOptions(page);
+}
+async function waitForAutocompleteOptions(page, input, options, expectedText, containsIgnoringNumber = false) {
     if (await options.first().isVisible({ timeout: 3000 }).catch(() => false)) {
         if (expectedText) {
-            await waitForOptionsToLoad(page, expectedText);
+            await waitForOptionsToLoad(page, expectedText, containsIgnoringNumber);
         }
         return;
     }
@@ -844,14 +1115,14 @@ async function waitForAutocompleteOptions(page, input, options, expectedText) {
     await page.keyboard.press("ArrowDown").catch(() => undefined);
     if (await options.first().isVisible({ timeout: 3000 }).catch(() => false)) {
         if (expectedText) {
-            await waitForOptionsToLoad(page, expectedText);
+            await waitForOptionsToLoad(page, expectedText, containsIgnoringNumber);
         }
         return;
     }
     const combo = page.locator(".properties [role='combobox']").first();
     await combo.click().catch(() => undefined);
     await page.keyboard.press("ArrowDown").catch(() => undefined);
-    await waitForOptionsToLoad(page, expectedText);
+    await waitForOptionsToLoad(page, expectedText, containsIgnoringNumber);
 }
 async function findOptionIndex(options, optionName) {
     const optionTexts = await listOptionTexts(options);
@@ -859,6 +1130,18 @@ async function findOptionIndex(options, optionName) {
     for (let index = 0; index < optionTexts.length; index += 1) {
         const text = normalizeText(optionTexts[index]);
         if (text === expected) {
+            return index;
+        }
+    }
+    return -1;
+}
+async function findOptionIndexContainsIgnoringNumber(options, expectedText) {
+    const optionTexts = await listOptionTexts(options);
+    const expected = normalizeText(removeLeadingNumberPrefix(expectedText));
+    (0, utils_js_1.info)(`Procurando opcao de Acao contendo: ${expectedText}`);
+    for (let index = 0; index < optionTexts.length; index += 1) {
+        const candidate = normalizeText(removeLeadingNumberPrefix(optionTexts[index]));
+        if (candidate.includes(expected)) {
             return index;
         }
     }
@@ -994,12 +1277,13 @@ async function saveChanges(page) {
         throw new AutomationError('Botao "Salvar Alteracoes" nao encontrado.');
     }
     await saveButton.click();
+    markWorkflowChanged();
     (0, utils_js_1.ok)("Salvar Alteracoes clicado");
     await Promise.race([
         page.getByText(/salvo|sucesso|alteracoes salvas|alteracoes salvas/i).first().waitFor({ state: "visible", timeout: 5000 }),
         page.waitForLoadState("networkidle", { timeout: 5000 })
     ]).catch(() => undefined);
-    await waitStep("apos salvar alteracoes", getConfig().delayAfterSaveChangesMs);
+    await waitStep("apos salvar alteracoes", getCurrentTiming().delayAfterSaveChangesMs);
 }
 async function saveChangesIfNeeded(page, validationInfo) {
     (0, utils_js_1.info)(`Validando campo ${validationInfo.fieldName}`);
@@ -1011,7 +1295,8 @@ async function saveChangesIfNeeded(page, validationInfo) {
     }
     (0, utils_js_1.info)("Procurando botao Salvar Alteracoes");
     await scrollRightPanelToBottom(page);
-    let saveButton = await findSaveChangesButton(page);
+    const config = getConfig();
+    let saveButton = await waitForSaveChangesButton(page, config.saveButtonMaxWaitMs, config.saveButtonPollIntervalMs);
     if (!saveButton) {
         if (validationInfo.isFieldCorrect) {
             console.warn('[WARN] Botao "Salvar Alteracoes" nao apareceu, mas o campo ja esta correto. Seguindo para o proximo bloco.');
@@ -1026,7 +1311,7 @@ async function saveChangesIfNeeded(page, validationInfo) {
     if (!(await saveButton.isEnabled().catch(() => false))) {
         (0, utils_js_1.info)("Botao Salvar Alteracoes esta desabilitado, aguardando 5000ms");
         await page.waitForTimeout(5000);
-        saveButton = await findSaveChangesButton(page);
+        saveButton = await waitForSaveChangesButton(page, config.saveButtonMaxWaitMs, config.saveButtonPollIntervalMs);
         if (!saveButton || !(await saveButton.isEnabled().catch(() => false))) {
             if (validationInfo.isFieldCorrect) {
                 console.warn('[WARN] Botao "Salvar Alteracoes" nao habilitou, mas o campo ja esta correto. Seguindo para o proximo bloco.');
@@ -1040,12 +1325,26 @@ async function saveChangesIfNeeded(page, validationInfo) {
         }
     }
     await saveButton.click();
+    markWorkflowChanged();
     (0, utils_js_1.ok)("Salvar Alteracoes clicado");
     await Promise.race([
         page.getByText(/salvo|sucesso|alteracoes salvas|alteracoes salvas/i).first().waitFor({ state: "visible", timeout: 5000 }),
         page.waitForLoadState("networkidle", { timeout: 5000 })
     ]).catch(() => undefined);
-    await waitStep("apos salvar alteracoes", getConfig().delayAfterSaveChangesMs);
+    await waitStep("apos salvar alteracoes", getCurrentTiming().delayAfterSaveChangesMs);
+}
+async function waitForSaveChangesButton(page, maxWaitMs, pollIntervalMs) {
+    const startedAt = Date.now();
+    (0, utils_js_1.info)(`Procurando botao Salvar Alteracoes por ate ${maxWaitMs}ms`);
+    while (Date.now() - startedAt < maxWaitMs) {
+        const button = await findSaveChangesButton(page);
+        if (button) {
+            (0, utils_js_1.ok)("Botao Salvar Alteracoes apareceu. Clicando imediatamente.");
+            return button;
+        }
+        await page.waitForTimeout(pollIntervalMs);
+    }
+    return null;
 }
 async function findSaveChangesButton(page) {
     const exactSaveChangesText = /^Salvar Alter(a|á)ç(õ|o)es$/i;
@@ -1279,6 +1578,28 @@ function getFieldLabel(fieldName) {
         return "Fluxo de bot";
     }
     return fieldName;
+}
+function removeLeadingNumberPrefix(text) {
+    return text.replace(/^\s*\d+\s*-\s*/, "").trim();
+}
+function shouldSelectContainsIgnoringNumber(optionName) {
+    const normalized = normalizeText(removeLeadingNumberPrefix(optionName));
+    return normalized === "realizar agendamento" ||
+        normalized === "finalizar atendimento" ||
+        normalized === "finalizar atendimento ativo" ||
+        normalized === "contato ativo livre" ||
+        normalized === "voltar ao menu anterior" ||
+        normalized === "contato ativo";
+}
+function getOptionExcludeValues(optionName) {
+    const normalized = normalizeText(removeLeadingNumberPrefix(optionName));
+    if (normalized === "finalizar atendimento") {
+        return ["Finalizar Atendimento Ativo"];
+    }
+    if (normalized === "contato ativo") {
+        return ["Contato Ativo Livre"];
+    }
+    return [];
 }
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

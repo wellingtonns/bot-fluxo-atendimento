@@ -7,14 +7,18 @@ import {
   clickStartCaseHandlingBlock,
   clickStartBlock,
   connectToExistingChrome,
+  detectWorkflowAlreadyProcessed,
   ensureAuthenticated,
   finishBrowserConnection,
+  hasWorkflowChanges,
   openTipoCasoField,
   openWorkflow,
+  resetWorkflowChanged,
   saveChangesIfNeeded,
   saveWorkflowOnly,
   selectStartCaseHandlingAction,
   selectAllTipoCasoOptions,
+  setCurrentRuleField,
   setBotConfig,
   waitStep,
   updateActionBlock,
@@ -51,7 +55,7 @@ type WorkflowResult = {
   clinicName: string;
   clinica: string;
   url: string;
-  status: "success" | "error";
+  status: "success" | "error" | "already_configured" | "skipped_already_done";
   errorBlock: string;
   errorField: string;
   expectedValue: string;
@@ -62,6 +66,7 @@ type WorkflowResult = {
   publishedWorkflow: false;
   durationSeconds: number;
   attempts: number;
+  message: string;
   etapaErro: string;
   mensagemErro: string;
   screenshotFinal: string;
@@ -88,7 +93,7 @@ type StepTiming = {
 
 type WorkflowTiming = {
   clinicName: string;
-  status: "success" | "error";
+  status: "success" | "error" | "already_configured" | "skipped_already_done";
   startedAtMs: number;
   durationSeconds?: number;
   steps: Array<{
@@ -109,6 +114,9 @@ async function main(): Promise<void> {
 
   baseConfig = loadConfig();
   setBotConfig(baseConfig);
+  info(`Modo de execucao: ${baseConfig.executionMode}`);
+  info(`Usando tempos padrao ${baseConfig.executionMode}`);
+  info("Tempos rapidos para campo Acao habilitados");
   await ensureEvidenceFolders();
 
   const targets = await loadWorkflowTargets();
@@ -192,6 +200,7 @@ export async function runWorkflowTarget(target: WorkflowTarget): Promise<Workflo
     publishedWorkflow: false,
     durationSeconds: 0,
     attempts: 0,
+    message: "",
     etapaErro: "",
     mensagemErro: "",
     screenshotFinal: "",
@@ -214,6 +223,7 @@ export async function runWorkflowTarget(target: WorkflowTarget): Promise<Workflo
         publishWorkflow: false,
         attemptNumber
       });
+      resetWorkflowChanged();
 
       info(`Tentativa ${attemptNumber}/${maxAttempts}`);
 
@@ -225,6 +235,18 @@ export async function runWorkflowTarget(target: WorkflowTarget): Promise<Workflo
 
         result.etapaErro = "Verificar sessao";
         await ensureAuthenticated(sharedPage);
+        result.etapaErro = "Verificar workflow ja configurado";
+        const alreadyProcessed = await detectWorkflowAlreadyProcessed(sharedPage, target.clinicName);
+        if (alreadyProcessed.alreadyConfigured) {
+          result.status = "already_configured";
+          result.message = "Workflow ja estava configurado. Nenhuma alteracao realizada.";
+          result.mensagemErro = "";
+          result.errorMessage = "";
+          ok(alreadyProcessed.reason);
+          console.log(`[SKIP] Clinica ${target.clinicName} aparentemente ja configurada. Indo para a proxima clinica.`);
+          lastError = null;
+          break;
+        }
         info(`Clinica usada: ${target.clinicName}`);
         info("Executando alteracoes");
         result.etapaErro = "Executar alteracoes";
@@ -258,6 +280,11 @@ export async function runWorkflowTarget(target: WorkflowTarget): Promise<Workflo
       throw lastError;
     }
 
+    if (result.status === "already_configured" || result.status === "skipped_already_done") {
+      result.etapaErro = "";
+      return result;
+    }
+
     result.status = "success";
     result.mensagemErro = "";
     result.errorBlock = "";
@@ -267,11 +294,13 @@ export async function runWorkflowTarget(target: WorkflowTarget): Promise<Workflo
     result.errorMessage = "";
     result.screenshotPath = "";
 
-    if (baseConfig.saveWorkflow) {
+    if (baseConfig.saveWorkflow && hasWorkflowChanges()) {
       result.etapaErro = "Salvar Workflow";
       await saveWorkflowOnly(sharedPage);
       result.salvouWorkflow = true;
       result.savedWorkflow = true;
+    } else if (baseConfig.saveWorkflow) {
+      info("Nenhuma alteracao real detectada. Salvar Workflow nao sera clicado.");
     }
 
     result.etapaErro = "";
@@ -352,6 +381,9 @@ export async function generateTimingReport(results: WorkflowResult[]): Promise<v
   const totalSeconds = Math.round((Date.now() - executionStartedAtMs) / 1000);
   const success = results.filter((result) => result.status === "success").length;
   const error = results.filter((result) => result.status === "error").length;
+  const alreadyConfigured = results.filter((result) =>
+    result.status === "already_configured" || result.status === "skipped_already_done"
+  ).length;
   const completedWorkflowDurations = workflowTimings
     .map((workflow) => workflow.durationSeconds ?? 0)
     .filter((duration) => duration > 0);
@@ -363,6 +395,7 @@ export async function generateTimingReport(results: WorkflowResult[]): Promise<v
     totalWorkflows: results.length,
     success,
     error,
+    alreadyConfigured,
     averageSecondsPerWorkflow,
     totalSeconds,
     workflows: workflowTimings.map((workflow) => ({
@@ -393,7 +426,10 @@ export function startWorkflowTimer(clinicName: string): void {
   console.log(`[TIMER] Inicio: ${formatClock(new Date(activeWorkflowTiming.startedAtMs))}`);
 }
 
-export function endWorkflowTimer(clinicName: string, status: "success" | "error" = "success"): void {
+export function endWorkflowTimer(
+  clinicName: string,
+  status: "success" | "error" | "already_configured" | "skipped_already_done" = "success"
+): void {
   if (!baseConfig.measureTiming || !activeWorkflowTiming) {
     return;
   }
@@ -439,6 +475,9 @@ export function logTimingSummary(results: WorkflowResult[]): void {
   const totalSeconds = Math.round((Date.now() - executionStartedAtMs) / 1000);
   const success = results.filter((result) => result.status === "success").length;
   const error = results.filter((result) => result.status === "error").length;
+  const alreadyConfigured = results.filter((result) =>
+    result.status === "already_configured" || result.status === "skipped_already_done"
+  ).length;
   const completedWorkflowDurations = workflowTimings
     .map((workflow) => workflow.durationSeconds ?? 0)
     .filter((duration) => duration > 0);
@@ -451,36 +490,47 @@ export function logTimingSummary(results: WorkflowResult[]): void {
   console.log(`Total de clinicas: ${results.length}`);
   console.log(`Sucesso: ${success}`);
   console.log(`Erro: ${error}`);
+  console.log(`Ja configurado: ${alreadyConfigured}`);
   console.log(`Tempo medio por clinica: ${formatDuration(averageSecondsPerWorkflow)}`);
   console.log(`Tempo total: ${formatDuration(totalSeconds)}`);
 }
 
 async function runConfiguredRules(page: Page, result: WorkflowResult): Promise<void> {
   await runStep(result, "Iniciar / Tipo de Caso", async () => {
-    await clickStartBlock(page);
-    await openTipoCasoField(page);
-    await selectAllTipoCasoOptions(page);
-    await saveChangesIfNeeded(page, {
-      clinicName: result.clinica,
-      url: result.url,
-      blockName: "Iniciar / Tipo de Caso",
-      fieldName: "Tipo de Caso",
-      expectedValue: "Todas as opcoes",
-      isFieldCorrect: true
-    });
+    setCurrentRuleField("Tipo de Caso");
+    try {
+      await clickStartBlock(page);
+      await openTipoCasoField(page);
+      await selectAllTipoCasoOptions(page);
+      await saveChangesIfNeeded(page, {
+        clinicName: result.clinica,
+        url: result.url,
+        blockName: "Iniciar / Tipo de Caso",
+        fieldName: "Tipo de Caso",
+        expectedValue: "Todas as opcoes",
+        isFieldCorrect: true
+      });
+    } finally {
+      setCurrentRuleField();
+    }
   });
   await runStep(result, "Aguardando Atendimento", () => updateAllAguardandoAtendimentoBlocks(page));
   await runStep(result, "StartCaseHandling", async () => {
-    await clickStartCaseHandlingBlock(page);
-    await selectStartCaseHandlingAction(page);
-    await saveChangesIfNeeded(page, {
-      clinicName: result.clinica,
-      url: result.url,
-      blockName: "StartCaseHandling",
-      fieldName: "Acao",
-      expectedValue: "StartCaseHandling",
-      isFieldCorrect: true
-    });
+    setCurrentRuleField("Acao");
+    try {
+      await clickStartCaseHandlingBlock(page);
+      await selectStartCaseHandlingAction(page);
+      await saveChangesIfNeeded(page, {
+        clinicName: result.clinica,
+        url: result.url,
+        blockName: "StartCaseHandling",
+        fieldName: "Acao",
+        expectedValue: "StartCaseHandling",
+        isFieldCorrect: true
+      });
+    } finally {
+      setCurrentRuleField();
+    }
   });
   await runStep(result, "Em Atendimento Ativo", () => updateAllEmAtendimentoAtivoBlocks(page));
   await runStep(result, "Presidente Prudente - Em Atendimento", () => updateAllPresidentePendenteEmAtendimentoBlocks(page));
@@ -490,7 +540,7 @@ async function runConfiguredRules(page: Page, result: WorkflowResult): Promise<v
   await runStep(result, "4 - Cancelar Agendamento", () => updateActionBlock(page, { includes: ["4 - Cancelar Agendamento"] }, "4 - Cancelar Agendamento", "cancelar-agendamento"));
   await runStep(result, "Realizar Agendamento", () => updateActionBlock(page, { includes: ["Realizar Agendamento"] }, "Realizar Agendamento", "realizar-agendamento"));
   await runStep(result, "Finalizar Atendimento", () => updateActionBlock(page, { includes: ["Finalizar Atendimento"], excludes: ["Ativo"] }, "Finalizar Atendimento", "finalizar-atendimento"));
-  await runStep(result, "6 - Finalizar Atendimento Ativo", () => updateActionBlock(page, { includes: ["6 - Finalizar Atendimento Ativo"] }, "6 - Finalizar Atendimento Ativo", "finalizar-atendimento-ativo"));
+  await runStep(result, "Finalizar Atendimento Ativo", () => updateActionBlock(page, { includes: ["Finalizar Atendimento Ativo"] }, "Finalizar Atendimento Ativo", "finalizar-atendimento-ativo"));
   await runStep(result, "Transferir para Bot", () => updateAllTransferToBotBlocks(page));
   await runStep(result, "Presidente Prudente - Navegacao Pesquisa", () => updateAllPresidenteNavegacaoPesquisaBlocks(page));
   await runStep(result, "Finalizado", () => updateAllFinalizadoBlocks(page));
@@ -503,7 +553,7 @@ async function runConfiguredRules(page: Page, result: WorkflowResult): Promise<v
   await runStep(result, "Agendado", () => updateAllPresidenteAgendadoBlocks(page));
   await runStep(result, "Contato Ativo", () => updateAllPresidenteContatoAtivoBlocks(page));
   await runStep(result, "Voltar ao Menu Anterior", () => updateActionBlock(page, { includes: ["Voltar ao Menu Anterior"] }, "Voltar ao Menu Anterior", "voltar-menu-anterior"));
-  await runStep(result, "Contato Ativo Livre", () => updateActionBlock(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo", "contato-ativo-livre"));
+  await runStep(result, "Contato Ativo Livre", () => updateActionBlock(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo Livre", "contato-ativo-livre"));
 }
 
 async function runStep(result: WorkflowResult, blockName: string, action: () => Promise<void>): Promise<void> {
@@ -565,12 +615,16 @@ export async function appendClinicErrorTxt(errorInfo: ClinicErrorInfo): Promise<
 function printFinalReportSummary(results: WorkflowResult[]): void {
   const success = results.filter((result) => result.status === "success").length;
   const errors = results.filter((result) => result.status === "error").length;
+  const alreadyConfigured = results.filter((result) =>
+    result.status === "already_configured" || result.status === "skipped_already_done"
+  ).length;
 
   console.log("");
   console.log("[RELATORIO FINAL]");
   console.log(`Total de workflows: ${results.length}`);
   console.log(`Sucesso: ${success}`);
   console.log(`Erro: ${errors}`);
+  console.log(`Ja configurado: ${alreadyConfigured}`);
   console.log("Publicados: 0");
 }
 

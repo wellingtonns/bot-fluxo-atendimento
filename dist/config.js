@@ -19,7 +19,79 @@ function parseNumber(value, defaultValue) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : defaultValue;
 }
+function getModeTiming(mode) {
+    switch (mode.trim().toLowerCase()) {
+        case "fast-safe":
+            return {
+                delayAfterPageLoadMs: 2500,
+                delayAfterBlockClickMs: 600,
+                delayAfterFieldClickMs: 400,
+                delayAfterTypingMs: 700,
+                delayAfterOptionSelectMs: 100,
+                delayAfterSaveChangesMs: 300,
+                delayAfterSaveWorkflowMs: 1500,
+                waitForOptionsTimeoutMs: 5000,
+                waitForFieldEnabledTimeoutMs: 5000,
+                waitAfterBlockClickOnRetryMs: 2000
+            };
+        case "half-safe":
+            return {
+                delayAfterPageLoadMs: 4000,
+                delayAfterBlockClickMs: 1200,
+                delayAfterFieldClickMs: 1000,
+                delayAfterTypingMs: 1200,
+                delayAfterOptionSelectMs: 700,
+                delayAfterSaveChangesMs: 1800,
+                delayAfterSaveWorkflowMs: 2500,
+                waitForOptionsTimeoutMs: 8000,
+                waitForFieldEnabledTimeoutMs: 8000,
+                waitAfterBlockClickOnRetryMs: 3000
+            };
+        case "fast":
+            return {
+                delayAfterPageLoadMs: 2500,
+                delayAfterBlockClickMs: 700,
+                delayAfterFieldClickMs: 500,
+                delayAfterTypingMs: 700,
+                delayAfterOptionSelectMs: 400,
+                delayAfterSaveChangesMs: 1000,
+                delayAfterSaveWorkflowMs: 1500,
+                waitForOptionsTimeoutMs: 5000,
+                waitForFieldEnabledTimeoutMs: 5000,
+                waitAfterBlockClickOnRetryMs: 2000
+            };
+        case "balanced":
+            return {
+                delayAfterPageLoadMs: 6000,
+                delayAfterBlockClickMs: 1800,
+                delayAfterFieldClickMs: 1500,
+                delayAfterTypingMs: 1800,
+                delayAfterOptionSelectMs: 1000,
+                delayAfterSaveChangesMs: 2500,
+                delayAfterSaveWorkflowMs: 3500,
+                waitForOptionsTimeoutMs: 10000,
+                waitForFieldEnabledTimeoutMs: 10000,
+                waitAfterBlockClickOnRetryMs: 4000
+            };
+        case "safe":
+        default:
+            return {
+                delayAfterPageLoadMs: 8000,
+                delayAfterBlockClickMs: 2500,
+                delayAfterFieldClickMs: 2000,
+                delayAfterTypingMs: 2500,
+                delayAfterOptionSelectMs: 1500,
+                delayAfterSaveChangesMs: 3500,
+                delayAfterSaveWorkflowMs: 5000,
+                waitForOptionsTimeoutMs: 15000,
+                waitForFieldEnabledTimeoutMs: 15000,
+                waitAfterBlockClickOnRetryMs: 5000
+            };
+    }
+}
 function loadConfig() {
+    const executionMode = process.env.BOT_EXECUTION_MODE?.trim() || "fast-safe";
+    const modeTiming = getModeTiming(executionMode);
     return {
         workflowUrl: process.env.BOT_WORKFLOW_URL?.trim() || "",
         workflowsFile: process.env.BOT_WORKFLOWS_FILE?.trim() || "config/workflows.txt",
@@ -36,18 +108,30 @@ function loadConfig() {
         errorTxtFile: process.env.BOT_ERROR_TXT_FILE?.trim() || "screenshots/erros/clinicas-com-erro.txt",
         maxRetriesPerWorkflow: parseNumber(process.env.BOT_MAX_RETRIES_PER_WORKFLOW, 1),
         refreshBeforeRetry: parseBoolean(process.env.BOT_REFRESH_BEFORE_RETRY, true),
-        waitAfterBlockClickOnRetryMs: parseNumber(process.env.BOT_WAIT_AFTER_BLOCK_CLICK_ON_RETRY_MS, 5000),
-        executionMode: process.env.BOT_EXECUTION_MODE?.trim() || "safe",
+        waitAfterBlockClickOnRetryMs: parseNumber(process.env.BOT_WAIT_AFTER_BLOCK_CLICK_ON_RETRY_MS, modeTiming.waitAfterBlockClickOnRetryMs),
+        executionMode,
         targetTimePerClinicSeconds: parseNumber(process.env.BOT_TARGET_TIME_PER_CLINIC_SECONDS, 180),
-        delayAfterPageLoadMs: parseNumber(process.env.BOT_DELAY_AFTER_PAGE_LOAD_MS, 8000),
-        delayAfterBlockClickMs: parseNumber(process.env.BOT_DELAY_AFTER_BLOCK_CLICK_MS, 2500),
-        delayAfterFieldClickMs: parseNumber(process.env.BOT_DELAY_AFTER_FIELD_CLICK_MS, 2000),
-        delayAfterTypingMs: parseNumber(process.env.BOT_DELAY_AFTER_TYPING_MS, 2500),
-        delayAfterOptionSelectMs: parseNumber(process.env.BOT_DELAY_AFTER_OPTION_SELECT_MS, 1500),
-        delayAfterSaveChangesMs: parseNumber(process.env.BOT_DELAY_AFTER_SAVE_CHANGES_MS, 3500),
-        delayAfterSaveWorkflowMs: parseNumber(process.env.BOT_DELAY_AFTER_SAVE_WORKFLOW_MS, 5000),
-        waitForOptionsTimeoutMs: parseNumber(process.env.BOT_WAIT_FOR_OPTIONS_TIMEOUT_MS, 15000),
-        waitForFieldEnabledTimeoutMs: parseNumber(process.env.BOT_WAIT_FOR_FIELD_ENABLED_TIMEOUT_MS, 15000),
+        delayAfterPageLoadMs: parseNumber(process.env.BOT_DELAY_AFTER_PAGE_LOAD_MS, modeTiming.delayAfterPageLoadMs),
+        delayAfterBlockClickMs: parseNumber(process.env.BOT_DELAY_AFTER_BLOCK_CLICK_MS, modeTiming.delayAfterBlockClickMs),
+        delayAfterFieldClickMs: parseNumber(process.env.BOT_DELAY_AFTER_FIELD_CLICK_MS, modeTiming.delayAfterFieldClickMs),
+        delayAfterTypingMs: parseNumber(process.env.BOT_DELAY_AFTER_TYPING_MS, modeTiming.delayAfterTypingMs),
+        delayAfterOptionSelectMs: parseNumber(process.env.BOT_DELAY_AFTER_OPTION_SELECT_MS, modeTiming.delayAfterOptionSelectMs),
+        delayAfterSaveChangesMs: parseNumber(process.env.BOT_DELAY_AFTER_SAVE_CHANGES_MS, modeTiming.delayAfterSaveChangesMs),
+        delayAfterSaveWorkflowMs: parseNumber(process.env.BOT_DELAY_AFTER_SAVE_WORKFLOW_MS, modeTiming.delayAfterSaveWorkflowMs),
+        waitForOptionsTimeoutMs: parseNumber(process.env.BOT_WAIT_FOR_OPTIONS_TIMEOUT_MS, modeTiming.waitForOptionsTimeoutMs),
+        waitForFieldEnabledTimeoutMs: parseNumber(process.env.BOT_WAIT_FOR_FIELD_ENABLED_TIMEOUT_MS, modeTiming.waitForFieldEnabledTimeoutMs),
+        actionDelayAfterBlockClickMs: parseNumber(process.env.BOT_ACTION_DELAY_AFTER_BLOCK_CLICK_MS, 300),
+        actionDelayAfterFieldClickMs: parseNumber(process.env.BOT_ACTION_DELAY_AFTER_FIELD_CLICK_MS, 250),
+        actionDelayAfterOptionSelectMs: parseNumber(process.env.BOT_ACTION_DELAY_AFTER_OPTION_SELECT_MS, 100),
+        actionDelayAfterSaveChangesMs: parseNumber(process.env.BOT_ACTION_DELAY_AFTER_SAVE_CHANGES_MS, 200),
+        actionWaitForOptionsTimeoutMs: parseNumber(process.env.BOT_ACTION_WAIT_FOR_OPTIONS_TIMEOUT_MS, 3500),
+        optionPollIntervalMs: parseNumber(process.env.BOT_OPTION_POLL_INTERVAL_MS, 80),
+        optionMaxWaitMs: parseNumber(process.env.BOT_OPTION_MAX_WAIT_MS, 2000),
+        actionOptionMaxWaitMs: parseNumber(process.env.BOT_ACTION_OPTION_MAX_WAIT_MS, 1000),
+        actionOptionPollIntervalMs: parseNumber(process.env.BOT_ACTION_OPTION_POLL_INTERVAL_MS, 50),
+        saveButtonMaxWaitMs: parseNumber(process.env.BOT_SAVE_BUTTON_MAX_WAIT_MS, 1000),
+        saveButtonPollIntervalMs: parseNumber(process.env.BOT_SAVE_BUTTON_POLL_INTERVAL_MS, 100),
+        botFlowCollectOptionsStableMs: parseNumber(process.env.BOT_BOTFLOW_COLLECT_OPTIONS_STABLE_MS, 300),
         measureTiming: parseBoolean(process.env.BOT_MEASURE_TIMING, true),
         attemptNumber: 1
     };

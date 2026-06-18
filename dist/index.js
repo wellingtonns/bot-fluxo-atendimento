@@ -31,6 +31,9 @@ async function main() {
     (0, utils_js_1.info)("Iniciando bot local cVortex");
     baseConfig = (0, config_js_1.loadConfig)();
     (0, bot_js_1.setBotConfig)(baseConfig);
+    (0, utils_js_1.info)(`Modo de execucao: ${baseConfig.executionMode}`);
+    (0, utils_js_1.info)(`Usando tempos padrao ${baseConfig.executionMode}`);
+    (0, utils_js_1.info)("Tempos rapidos para campo Acao habilitados");
     await (0, utils_js_1.ensureEvidenceFolders)();
     const targets = await loadWorkflowTargets();
     (0, utils_js_1.ok)(`Workflows carregados: ${targets.length}`);
@@ -99,6 +102,7 @@ async function runWorkflowTarget(target) {
         publishedWorkflow: false,
         durationSeconds: 0,
         attempts: 0,
+        message: "",
         etapaErro: "",
         mensagemErro: "",
         screenshotFinal: "",
@@ -118,6 +122,7 @@ async function runWorkflowTarget(target) {
                 publishWorkflow: false,
                 attemptNumber
             });
+            (0, bot_js_1.resetWorkflowChanged)();
             (0, utils_js_1.info)(`Tentativa ${attemptNumber}/${maxAttempts}`);
             try {
                 if (attemptNumber === 1) {
@@ -126,6 +131,18 @@ async function runWorkflowTarget(target) {
                 }
                 result.etapaErro = "Verificar sessao";
                 await (0, bot_js_1.ensureAuthenticated)(sharedPage);
+                result.etapaErro = "Verificar workflow ja configurado";
+                const alreadyProcessed = await (0, bot_js_1.detectWorkflowAlreadyProcessed)(sharedPage, target.clinicName);
+                if (alreadyProcessed.alreadyConfigured) {
+                    result.status = "already_configured";
+                    result.message = "Workflow ja estava configurado. Nenhuma alteracao realizada.";
+                    result.mensagemErro = "";
+                    result.errorMessage = "";
+                    (0, utils_js_1.ok)(alreadyProcessed.reason);
+                    console.log(`[SKIP] Clinica ${target.clinicName} aparentemente ja configurada. Indo para a proxima clinica.`);
+                    lastError = null;
+                    break;
+                }
                 (0, utils_js_1.info)(`Clinica usada: ${target.clinicName}`);
                 (0, utils_js_1.info)("Executando alteracoes");
                 result.etapaErro = "Executar alteracoes";
@@ -157,6 +174,10 @@ async function runWorkflowTarget(target) {
         if (lastError) {
             throw lastError;
         }
+        if (result.status === "already_configured" || result.status === "skipped_already_done") {
+            result.etapaErro = "";
+            return result;
+        }
         result.status = "success";
         result.mensagemErro = "";
         result.errorBlock = "";
@@ -165,11 +186,14 @@ async function runWorkflowTarget(target) {
         result.availableOptions = [];
         result.errorMessage = "";
         result.screenshotPath = "";
-        if (baseConfig.saveWorkflow) {
+        if (baseConfig.saveWorkflow && (0, bot_js_1.hasWorkflowChanges)()) {
             result.etapaErro = "Salvar Workflow";
             await (0, bot_js_1.saveWorkflowOnly)(sharedPage);
             result.salvouWorkflow = true;
             result.savedWorkflow = true;
+        }
+        else if (baseConfig.saveWorkflow) {
+            (0, utils_js_1.info)("Nenhuma alteracao real detectada. Salvar Workflow nao sera clicado.");
         }
         result.etapaErro = "";
         result.screenshotFinal = await takeFinalSuccessScreenshot(sharedPage, target.clinicName);
@@ -243,6 +267,7 @@ async function generateTimingReport(results) {
     const totalSeconds = Math.round((Date.now() - executionStartedAtMs) / 1000);
     const success = results.filter((result) => result.status === "success").length;
     const error = results.filter((result) => result.status === "error").length;
+    const alreadyConfigured = results.filter((result) => result.status === "already_configured" || result.status === "skipped_already_done").length;
     const completedWorkflowDurations = workflowTimings
         .map((workflow) => workflow.durationSeconds ?? 0)
         .filter((duration) => duration > 0);
@@ -253,6 +278,7 @@ async function generateTimingReport(results) {
         totalWorkflows: results.length,
         success,
         error,
+        alreadyConfigured,
         averageSecondsPerWorkflow,
         totalSeconds,
         workflows: workflowTimings.map((workflow) => ({
@@ -318,6 +344,7 @@ function logTimingSummary(results) {
     const totalSeconds = Math.round((Date.now() - executionStartedAtMs) / 1000);
     const success = results.filter((result) => result.status === "success").length;
     const error = results.filter((result) => result.status === "error").length;
+    const alreadyConfigured = results.filter((result) => result.status === "already_configured" || result.status === "skipped_already_done").length;
     const completedWorkflowDurations = workflowTimings
         .map((workflow) => workflow.durationSeconds ?? 0)
         .filter((duration) => duration > 0);
@@ -329,35 +356,48 @@ function logTimingSummary(results) {
     console.log(`Total de clinicas: ${results.length}`);
     console.log(`Sucesso: ${success}`);
     console.log(`Erro: ${error}`);
+    console.log(`Ja configurado: ${alreadyConfigured}`);
     console.log(`Tempo medio por clinica: ${formatDuration(averageSecondsPerWorkflow)}`);
     console.log(`Tempo total: ${formatDuration(totalSeconds)}`);
 }
 async function runConfiguredRules(page, result) {
     await runStep(result, "Iniciar / Tipo de Caso", async () => {
-        await (0, bot_js_1.clickStartBlock)(page);
-        await (0, bot_js_1.openTipoCasoField)(page);
-        await (0, bot_js_1.selectAllTipoCasoOptions)(page);
-        await (0, bot_js_1.saveChangesIfNeeded)(page, {
-            clinicName: result.clinica,
-            url: result.url,
-            blockName: "Iniciar / Tipo de Caso",
-            fieldName: "Tipo de Caso",
-            expectedValue: "Todas as opcoes",
-            isFieldCorrect: true
-        });
+        (0, bot_js_1.setCurrentRuleField)("Tipo de Caso");
+        try {
+            await (0, bot_js_1.clickStartBlock)(page);
+            await (0, bot_js_1.openTipoCasoField)(page);
+            await (0, bot_js_1.selectAllTipoCasoOptions)(page);
+            await (0, bot_js_1.saveChangesIfNeeded)(page, {
+                clinicName: result.clinica,
+                url: result.url,
+                blockName: "Iniciar / Tipo de Caso",
+                fieldName: "Tipo de Caso",
+                expectedValue: "Todas as opcoes",
+                isFieldCorrect: true
+            });
+        }
+        finally {
+            (0, bot_js_1.setCurrentRuleField)();
+        }
     });
     await runStep(result, "Aguardando Atendimento", () => (0, bot_js_1.updateAllAguardandoAtendimentoBlocks)(page));
     await runStep(result, "StartCaseHandling", async () => {
-        await (0, bot_js_1.clickStartCaseHandlingBlock)(page);
-        await (0, bot_js_1.selectStartCaseHandlingAction)(page);
-        await (0, bot_js_1.saveChangesIfNeeded)(page, {
-            clinicName: result.clinica,
-            url: result.url,
-            blockName: "StartCaseHandling",
-            fieldName: "Acao",
-            expectedValue: "StartCaseHandling",
-            isFieldCorrect: true
-        });
+        (0, bot_js_1.setCurrentRuleField)("Acao");
+        try {
+            await (0, bot_js_1.clickStartCaseHandlingBlock)(page);
+            await (0, bot_js_1.selectStartCaseHandlingAction)(page);
+            await (0, bot_js_1.saveChangesIfNeeded)(page, {
+                clinicName: result.clinica,
+                url: result.url,
+                blockName: "StartCaseHandling",
+                fieldName: "Acao",
+                expectedValue: "StartCaseHandling",
+                isFieldCorrect: true
+            });
+        }
+        finally {
+            (0, bot_js_1.setCurrentRuleField)();
+        }
     });
     await runStep(result, "Em Atendimento Ativo", () => (0, bot_js_1.updateAllEmAtendimentoAtivoBlocks)(page));
     await runStep(result, "Presidente Prudente - Em Atendimento", () => (0, bot_js_1.updateAllPresidentePendenteEmAtendimentoBlocks)(page));
@@ -367,7 +407,7 @@ async function runConfiguredRules(page, result) {
     await runStep(result, "4 - Cancelar Agendamento", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["4 - Cancelar Agendamento"] }, "4 - Cancelar Agendamento", "cancelar-agendamento"));
     await runStep(result, "Realizar Agendamento", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Realizar Agendamento"] }, "Realizar Agendamento", "realizar-agendamento"));
     await runStep(result, "Finalizar Atendimento", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Finalizar Atendimento"], excludes: ["Ativo"] }, "Finalizar Atendimento", "finalizar-atendimento"));
-    await runStep(result, "6 - Finalizar Atendimento Ativo", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["6 - Finalizar Atendimento Ativo"] }, "6 - Finalizar Atendimento Ativo", "finalizar-atendimento-ativo"));
+    await runStep(result, "Finalizar Atendimento Ativo", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Finalizar Atendimento Ativo"] }, "Finalizar Atendimento Ativo", "finalizar-atendimento-ativo"));
     await runStep(result, "Transferir para Bot", () => (0, bot_js_1.updateAllTransferToBotBlocks)(page));
     await runStep(result, "Presidente Prudente - Navegacao Pesquisa", () => (0, bot_js_1.updateAllPresidenteNavegacaoPesquisaBlocks)(page));
     await runStep(result, "Finalizado", () => (0, bot_js_1.updateAllFinalizadoBlocks)(page));
@@ -380,7 +420,7 @@ async function runConfiguredRules(page, result) {
     await runStep(result, "Agendado", () => (0, bot_js_1.updateAllPresidenteAgendadoBlocks)(page));
     await runStep(result, "Contato Ativo", () => (0, bot_js_1.updateAllPresidenteContatoAtivoBlocks)(page));
     await runStep(result, "Voltar ao Menu Anterior", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Voltar ao Menu Anterior"] }, "Voltar ao Menu Anterior", "voltar-menu-anterior"));
-    await runStep(result, "Contato Ativo Livre", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo", "contato-ativo-livre"));
+    await runStep(result, "Contato Ativo Livre", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo Livre", "contato-ativo-livre"));
 }
 async function runStep(result, blockName, action) {
     startStepTimer(blockName);
@@ -436,11 +476,13 @@ async function appendClinicErrorTxt(errorInfo) {
 function printFinalReportSummary(results) {
     const success = results.filter((result) => result.status === "success").length;
     const errors = results.filter((result) => result.status === "error").length;
+    const alreadyConfigured = results.filter((result) => result.status === "already_configured" || result.status === "skipped_already_done").length;
     console.log("");
     console.log("[RELATORIO FINAL]");
     console.log(`Total de workflows: ${results.length}`);
     console.log(`Sucesso: ${success}`);
     console.log(`Erro: ${errors}`);
+    console.log(`Ja configurado: ${alreadyConfigured}`);
     console.log("Publicados: 0");
 }
 function sanitizeFileName(value) {
