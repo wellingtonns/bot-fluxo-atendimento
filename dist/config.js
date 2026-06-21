@@ -131,7 +131,7 @@ function loadConfig() {
         actionOptionPollIntervalMs: parseNumber(process.env.BOT_ACTION_OPTION_POLL_INTERVAL_MS, 50),
         saveButtonMaxWaitMs: parseNumber(process.env.BOT_SAVE_BUTTON_MAX_WAIT_MS, 1000),
         saveButtonPollIntervalMs: parseNumber(process.env.BOT_SAVE_BUTTON_POLL_INTERVAL_MS, 100),
-        botFlowCollectOptionsStableMs: parseNumber(process.env.BOT_BOTFLOW_COLLECT_OPTIONS_STABLE_MS, 300),
+        botFlowCollectOptionsStableMs: parseNumber(process.env.BOT_BOTFLOW_COLLECT_OPTIONS_STABLE_MS, 100),
         measureTiming: parseBoolean(process.env.BOT_MEASURE_TIMING, true),
         attemptNumber: 1
     };

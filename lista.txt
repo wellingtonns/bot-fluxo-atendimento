@@ -1,0 +1,362 @@
+Campo Grande MS|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb8c6704b6d3dd6a0c6
+Campo Largo|https://amorsaude.cvortex.com/wos/service-flow/6a2dad0ee678af7c400b31d8
+Campo Mourão|https://amorsaude.cvortex.com/wos/service-flow/6a2dad3be678af7c400b31e9
+Campos dos Goytacazes|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5cfa8f3643ac484eef
+Canoas Centro e Mathias Velho|https://amorsaude.cvortex.com/wos/service-flow/6a2dad14c6704b6d3dd6a083
+Capela do Socorro e Grajaú|https://amorsaude.cvortex.com/wos/service-flow/6a2daceae678af7c400b31c9
+Caraguatatuba|https://amorsaude.cvortex.com/wos/service-flow/6a2dacf8c6704b6d3dd6a079
+Carapicuíba|https://amorsaude.cvortex.com/wos/service-flow/6a2dacf2c6704b6d3dd6a077
+Caratinga|https://amorsaude.cvortex.com/wos/service-flow/6a2dad71fa8f3643ac484efa
+Cariacica|https://amorsaude.cvortex.com/wos/service-flow/6a2dada3fa8f3643ac484f12
+Cariri|https://amorsaude.cvortex.com/wos/service-flow/6a2dad05fa8f3643ac484ec4
+Caruaru|https://amorsaude.cvortex.com/wos/service-flow/6a2dad16fa8f3643ac484ecb
+Casa Verde|https://amorsaude.cvortex.com/wos/service-flow/6a2dacebfa8f3643ac484eba
+Cascavel|https://amorsaude.cvortex.com/wos/service-flow/6a2dad80c6704b6d3dd6a0aa
+Castanhal|https://amorsaude.cvortex.com/wos/service-flow/6a2dad2dfa8f3643ac484ed7
+Castro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5ffa8f3643ac484ef2
+Cataguases|https://amorsaude.cvortex.com/wos/service-flow/6a2dad23e678af7c400b31e1
+Catalão|https://amorsaude.cvortex.com/wos/service-flow/6a2dade5fa8f3643ac484f33
+Catanduva|https://amorsaude.cvortex.com/wos/service-flow/6a2dad95e678af7c400b3210
+Caxias|https://amorsaude.cvortex.com/wos/service-flow/6a2dad32e678af7c400b31e6
+Caxias do Sul - Bento Gonçalves - Kayser|https://amorsaude.cvortex.com/wos/service-flow/6a2dad06c6704b6d3dd6a07d
+Ceilândia Norte e Sul|https://amorsaude.cvortex.com/wos/service-flow/6a2dacfac6704b6d3dd6a07a
+Central Lauro de Freitas|https://amorsaude.cvortex.com/wos/service-flow/6a2dae24e678af7c400b324c
+Cerquilho|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd0fa8f3643ac484f27
+Chapecó|https://amorsaude.cvortex.com/wos/service-flow/6a2daddde678af7c400b3233
+Cianorte|https://amorsaude.cvortex.com/wos/service-flow/6a2dade6fa8f3643ac484f34
+Colatina|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf1c6704b6d3dd6a0d8
+Colombo|https://amorsaude.cvortex.com/wos/service-flow/6a2dadaee678af7c400b321f
+Concórdia|https://amorsaude.cvortex.com/wos/service-flow/6a2dade7e678af7c400b3237
+Conselheiro Lafaiete|https://amorsaude.cvortex.com/wos/service-flow/6a2dadaae678af7c400b321d
+Contagem|https://amorsaude.cvortex.com/wos/service-flow/6a2dacfde678af7c400b31d1
+Contagem Laguna|https://amorsaude.cvortex.com/wos/service-flow/6a2dae17fa8f3643ac484f48
+Cornélio Procópio|https://amorsaude.cvortex.com/wos/service-flow/6a2dadecc6704b6d3dd6a0d5
+Coronel Fabriciano|https://amorsaude.cvortex.com/wos/service-flow/6a2dadaee678af7c400b3220
+Cotia|https://amorsaude.cvortex.com/wos/service-flow/6a2dada2fa8f3643ac484f11
+Crato|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb7fa8f3643ac484f17
+Criciúma|https://amorsaude.cvortex.com/wos/service-flow/6a2dad9fc6704b6d3dd6a0b9
+Cruz das Almas|https://amorsaude.cvortex.com/wos/service-flow/6a2dae3be678af7c400b3255
+Cruzeiro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad52e678af7c400b31f5
+Cubatão|https://amorsaude.cvortex.com/wos/service-flow/6a2dad88e678af7c400b320d
+Curitiba Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad09c6704b6d3dd6a07f
+Curitiba Portão|https://amorsaude.cvortex.com/wos/service-flow/6a2dad36fa8f3643ac484ede
+Curitiba Sitio Cercado e Pinheirinho|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd2e678af7c400b322d
+Cuiaba|https://amorsaude.cvortex.com/wos/service-flow/6a2dad96e678af7c400b3211
+Curvelo|https://amorsaude.cvortex.com/wos/service-flow/6a2dad74c6704b6d3dd6a0a5
+DF Santa Maria|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd0fa8f3643ac484f28
+DF São Sebastião|https://amorsaude.cvortex.com/wos/service-flow/6a2dad8bc6704b6d3dd6a0b0
+Diadema|https://amorsaude.cvortex.com/wos/service-flow/6a2dad65c6704b6d3dd6a09f
+Dias D Ávila|https://amorsaude.cvortex.com/wos/service-flow/6a2daddefa8f3643ac484f2d
+Divinópolis|https://amorsaude.cvortex.com/wos/service-flow/6a2dad61fa8f3643ac484ef4
+Dourados e Jd Clímax|https://amorsaude.cvortex.com/wos/service-flow/6a2dad76e678af7c400b3207
+Duque de Caxias Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dae20fa8f3643ac484f4d
+Duque de Caxias Jardim Primavera|https://amorsaude.cvortex.com/wos/service-flow/6a2dae24fa8f3643ac484f51
+Embu das Artes|https://amorsaude.cvortex.com/wos/service-flow/6a2dad7be678af7c400b3208
+Erechim|https://amorsaude.cvortex.com/wos/service-flow/6a2dad9ee678af7c400b3217
+Ermelino Matarazzo|https://amorsaude.cvortex.com/wos/service-flow/6a2dad4ce678af7c400b31f2
+Estância|https://amorsaude.cvortex.com/wos/service-flow/6a2dae06fa8f3643ac484f43
+Fazenda Rio Grande|https://amorsaude.cvortex.com/wos/service-flow/6a2dad56e678af7c400b31f9
+Feira de Santana|https://amorsaude.cvortex.com/wos/service-flow/6a2dadabfa8f3643ac484f14
+Fernandópolis|https://amorsaude.cvortex.com/wos/service-flow/6a2dad7cc6704b6d3dd6a0a8
+Ferraz de Vasconcelos|https://amorsaude.cvortex.com/wos/service-flow/6a2dad28fa8f3643ac484ed4
+Florianópolis|https://amorsaude.cvortex.com/wos/service-flow/6a2dad4bc6704b6d3dd6a097
+Formiga|https://amorsaude.cvortex.com/wos/service-flow/6a2dad68fa8f3643ac484ef7
+Formosa|https://amorsaude.cvortex.com/wos/service-flow/6a2dacefe678af7c400b31cc
+Fortaleza|https://amorsaude.cvortex.com/wos/service-flow/6a2dad6cc6704b6d3dd6a0a2
+Fortaleza CJ Esperança|https://amorsaude.cvortex.com/wos/service-flow/6a2dad4dc6704b6d3dd6a098
+Fortaleza Conjunto Ceará|https://amorsaude.cvortex.com/wos/service-flow/6a2dae09c6704b6d3dd6a0e5
+Fortaleza Messejana|https://amorsaude.cvortex.com/wos/service-flow/6a2dad70e678af7c400b3204
+Fortaleza Mondubim|https://amorsaude.cvortex.com/wos/service-flow/6a2dad2be678af7c400b31e2
+Foz do Iguaçu|https://amorsaude.cvortex.com/wos/service-flow/6a2dacece678af7c400b31cb
+Franca Jardim e Chico Julio|https://amorsaude.cvortex.com/wos/service-flow/6a2dad76c6704b6d3dd6a0a6
+Francisco Beltrão|https://amorsaude.cvortex.com/wos/service-flow/6a2dad82c6704b6d3dd6a0ab
+Francisco Morato|https://amorsaude.cvortex.com/wos/service-flow/6a2dad46fa8f3643ac484ee6
+Franco da Rocha|https://amorsaude.cvortex.com/wos/service-flow/6a2dad6ae678af7c400b3200
+Franqueadora|https://amorsaude.cvortex.com/wos/service-flow/6a2dace8e678af7c400b31c7
+Freguesia do Ó|https://amorsaude.cvortex.com/wos/service-flow/6a2dad4be678af7c400b31f1
+Gama|https://amorsaude.cvortex.com/wos/service-flow/6a2dad98e678af7c400b3212
+Garanhuns|https://amorsaude.cvortex.com/wos/service-flow/6a2dace7fa8f3643ac484eb9
+Goiana|https://amorsaude.cvortex.com/wos/service-flow/6a2dae16c6704b6d3dd6a0ee
+Goiânia Jardim Balneário|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd3c6704b6d3dd6a0ce
+Goiânia Noroeste|https://amorsaude.cvortex.com/wos/service-flow/6a2dad75fa8f3643ac484efb
+Goiânia Norte|https://amorsaude.cvortex.com/wos/service-flow/6a2dad6fe678af7c400b3203
+Goiânia Sul|https://amorsaude.cvortex.com/wos/service-flow/6a2dad89c6704b6d3dd6a0ae
+Gravatá|https://amorsaude.cvortex.com/wos/service-flow/6a2dad7ffa8f3643ac484f02
+Gravataí|https://amorsaude.cvortex.com/wos/service-flow/6a2dad69fa8f3643ac484ef8
+Guaianases|https://amorsaude.cvortex.com/wos/service-flow/6a2dad7dfa8f3643ac484f01
+Guaíba|https://amorsaude.cvortex.com/wos/service-flow/6a2dad87fa8f3643ac484f05
+Guanambi|https://amorsaude.cvortex.com/wos/service-flow/6a2dae40e678af7c400b3259
+Guarabira |https://amorsaude.cvortex.com/wos/service-flow/6a2dad6dfa8f3643ac484ef9
+Guarapari |https://amorsaude.cvortex.com/wos/service-flow/6a2dad7afa8f3643ac484eff
+Guarapuava |https://amorsaude.cvortex.com/wos/service-flow/6a2dadb4e678af7c400b3222
+Guaratinguetá|https://amorsaude.cvortex.com/wos/service-flow/6a2dad7fe678af7c400b3209
+Guarujá |https://amorsaude.cvortex.com/wos/service-flow/6a2dad84fa8f3643ac484f03
+Guarulhos Centro e Vila Flórida|https://amorsaude.cvortex.com/wos/service-flow/6a2dad70c6704b6d3dd6a0a3
+Guarulhos Parque São Luiz |https://amorsaude.cvortex.com/wos/service-flow/6a2dad6ee678af7c400b3202
+Guarulhos Pimentas|https://amorsaude.cvortex.com/wos/service-flow/6a2dad6be678af7c400b3201
+Gurupi|https://amorsaude.cvortex.com/wos/service-flow/6a2dae3ec6704b6d3dd6a0fb
+Hortolândia |https://amorsaude.cvortex.com/wos/service-flow/6a2dad4fe678af7c400b31f3
+Ibirité |https://amorsaude.cvortex.com/wos/service-flow/6a2dad3ce678af7c400b31ea
+Ibitinga |https://amorsaude.cvortex.com/wos/service-flow/6a2dad78fa8f3643ac484efd
+Ibiúna |https://amorsaude.cvortex.com/wos/service-flow/6a2dad8ec6704b6d3dd6a0b3
+Igarassu |https://amorsaude.cvortex.com/wos/service-flow/6a2dae03c6704b6d3dd6a0e0
+Iguatu |https://amorsaude.cvortex.com/wos/service-flow/6a2dadfcc6704b6d3dd6a0dc
+Ilha do Governador|https://amorsaude.cvortex.com/wos/service-flow/6a2dad79fa8f3643ac484efe
+Ilhéus |https://amorsaude.cvortex.com/wos/service-flow/6a2dad7ec6704b6d3dd6a0a9
+Imperatriz |https://amorsaude.cvortex.com/wos/service-flow/6a2dad78c6704b6d3dd6a0a7
+Indaiatuba Centro e Jardim|https://amorsaude.cvortex.com/wos/service-flow/6a2dad6cc6704b6d3dd6a0a1
+Ipatinga |https://amorsaude.cvortex.com/wos/service-flow/6a2dad77fa8f3643ac484efc
+Ipiranga |https://amorsaude.cvortex.com/wos/service-flow/6a2dadcce678af7c400b322a
+Itaboraí |https://amorsaude.cvortex.com/wos/service-flow/6a2dae39fa8f3643ac484f5d
+Itabuna Centro e Conceição|https://amorsaude.cvortex.com/wos/service-flow/6a2dad94e678af7c400b320f
+Itaguaí|https://amorsaude.cvortex.com/wos/service-flow/6a2dada9e678af7c400b321b
+Itaim Paulista|https://amorsaude.cvortex.com/wos/service-flow/6a2dad92e678af7c400b320e
+Itajaí |https://amorsaude.cvortex.com/wos/service-flow/6a2dadd6e678af7c400b322f
+Itajubá |https://amorsaude.cvortex.com/wos/service-flow/6a2dad91fa8f3643ac484f09
+Itapecerica da Serra|https://amorsaude.cvortex.com/wos/service-flow/6a2dada1c6704b6d3dd6a0bc
+Itaperuna|https://amorsaude.cvortex.com/wos/service-flow/6a2dae23e678af7c400b324b
+Itapetininga|https://amorsaude.cvortex.com/wos/service-flow/6a2dad93c6704b6d3dd6a0b7
+Itapeva|https://amorsaude.cvortex.com/wos/service-flow/6a2dad98e678af7c400b3213
+Itapevi|https://amorsaude.cvortex.com/wos/service-flow/6a2dad57fa8f3643ac484eec
+Itapipoca |https://amorsaude.cvortex.com/wos/service-flow/6a2dae0be678af7c400b3244
+Itaquaquecetuba |https://amorsaude.cvortex.com/wos/service-flow/6a2dacfee678af7c400b31d2
+Itaquaquecetuba II|https://amorsaude.cvortex.com/wos/service-flow/6a2dad62e678af7c400b31fd
+Itaquera|https://amorsaude.cvortex.com/wos/service-flow/6a2dad19e678af7c400b31dc
+Itaúna|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5bfa8f3643ac484eee
+Itú|https://amorsaude.cvortex.com/wos/service-flow/6a2dad8cc6704b6d3dd6a0b1
+Ituiutaba|https://amorsaude.cvortex.com/wos/service-flow/6a2dad63fa8f3643ac484ef5
+Itumbiara|https://amorsaude.cvortex.com/wos/service-flow/6a2dad91c6704b6d3dd6a0b6
+Jabaquara |https://amorsaude.cvortex.com/wos/service-flow/6a2dacf5e678af7c400b31ce
+Jaboatão |https://amorsaude.cvortex.com/wos/service-flow/6a2dad54fa8f3643ac484eeb
+Jaboticabal |https://amorsaude.cvortex.com/wos/service-flow/6a2dade3fa8f3643ac484f31
+Jacareí|https://amorsaude.cvortex.com/wos/service-flow/6a2daddafa8f3643ac484f2b
+Jacarepaguá e Anil|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd7fa8f3643ac484f2a
+Jacarezinho |https://amorsaude.cvortex.com/wos/service-flow/6a2dad94fa8f3643ac484f0a
+Jandira |https://amorsaude.cvortex.com/wos/service-flow/6a2dad97c6704b6d3dd6a0b8
+Jaraguá do Sul|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd8e678af7c400b3230
+Jaú |https://amorsaude.cvortex.com/wos/service-flow/6a2dade4fa8f3643ac484f32
+Jequié |https://amorsaude.cvortex.com/wos/service-flow/6a2dadebe678af7c400b323a
+Ji-Paraná|https://amorsaude.cvortex.com/wos/service-flow/6a2dad85fa8f3643ac484f04
+João Pessoa Norte e Sapé|https://amorsaude.cvortex.com/wos/service-flow/6a2dae11e678af7c400b3247
+João Pessoa Sul|https://amorsaude.cvortex.com/wos/service-flow/6a2dae13c6704b6d3dd6a0ed
+Joinville|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd6fa8f3643ac484f29
+Juazeiro |https://amorsaude.cvortex.com/wos/service-flow/6a2dad81e678af7c400b320a
+Juiz de Fora|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd9c6704b6d3dd6a0d1
+Jundiaí |https://amorsaude.cvortex.com/wos/service-flow/6a2daddfe678af7c400b3234
+Lages |https://amorsaude.cvortex.com/wos/service-flow/6a2dade2fa8f3643ac484f30
+Lagoa Santa|https://amorsaude.cvortex.com/wos/service-flow/6a2dad86c6704b6d3dd6a0ad
+Lajeado |https://amorsaude.cvortex.com/wos/service-flow/6a2dad8fc6704b6d3dd6a0b4
+Lavras |https://amorsaude.cvortex.com/wos/service-flow/6a2dadd8e678af7c400b3231
+Leme |https://amorsaude.cvortex.com/wos/service-flow/6a2dae19fa8f3643ac484f4a
+Limeira |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1be678af7c400b324a
+Limoeiro |https://amorsaude.cvortex.com/wos/service-flow/6a2dae12c6704b6d3dd6a0ec
+Linhares |https://amorsaude.cvortex.com/wos/service-flow/6a2dad8ffa8f3643ac484f08
+Lins |https://amorsaude.cvortex.com/wos/service-flow/6a2dad88fa8f3643ac484f06
+Londrina |https://amorsaude.cvortex.com/wos/service-flow/6a2dad54e678af7c400b31f7
+Luziânia |https://amorsaude.cvortex.com/wos/service-flow/6a2dad8ac6704b6d3dd6a0af
+Macaé |https://amorsaude.cvortex.com/wos/service-flow/6a2dad3afa8f3643ac484ee1
+Macaíba |https://amorsaude.cvortex.com/wos/service-flow/6a2dacf5fa8f3643ac484ebf
+Macapá |https://amorsaude.cvortex.com/wos/service-flow/6a2dadfdc6704b6d3dd6a0dd
+Maceió Centro e Maceió Norte|https://amorsaude.cvortex.com/wos/service-flow/6a2dae42e678af7c400b325a
+Madureira |https://amorsaude.cvortex.com/wos/service-flow/6a2dad47fa8f3643ac484ee7
+Magé |https://amorsaude.cvortex.com/wos/service-flow/6a2dae0dc6704b6d3dd6a0e9
+---
+Manhuaçu |https://amorsaude.cvortex.com/wos/service-flow/69b73465a9b1995aacb048c4
+Marabá |https://amorsaude.cvortex.com/wos/service-flow/6a2dad60e678af7c400b31fc
+Maracanaú e Maranguape|https://amorsaude.cvortex.com/wos/service-flow/6a2dad64c6704b6d3dd6a09e
+Mariana |https://amorsaude.cvortex.com/wos/service-flow/6a2dade1fa8f3643ac484f2f
+Maricá |https://amorsaude.cvortex.com/wos/service-flow/6a2dad27fa8f3643ac484ed3
+Marília |https://amorsaude.cvortex.com/wos/service-flow/6a2dacf6fa8f3643ac484ec0
+Méier|https://amorsaude.cvortex.com/wos/service-flow/6a2dad34c6704b6d3dd6a08f
+Mococa |https://amorsaude.cvortex.com/wos/service-flow/6a2dad22c6704b6d3dd6a08a
+Mogi das Cruzes|https://amorsaude.cvortex.com/wos/service-flow/6a2dade0fa8f3643ac484f2e
+Mogi das Cruzes Vila Suissa|https://amorsaude.cvortex.com/wos/service-flow/6a2dad66fa8f3643ac484ef6
+Mogi Guaçu|https://amorsaude.cvortex.com/wos/service-flow/6a2dae0bfa8f3643ac484f44
+Moju e Abaetetuba|https://amorsaude.cvortex.com/wos/service-flow/6a2dae0dc6704b6d3dd6a0e8
+Montenegro |https://amorsaude.cvortex.com/wos/service-flow/6a2dad18c6704b6d3dd6a086
+Montes Claros|https://amorsaude.cvortex.com/wos/service-flow/6a2dace8e678af7c400b31c6
+Mossoró |https://amorsaude.cvortex.com/wos/service-flow/6a2dae00fa8f3643ac484f3e
+Mossoró Abolição|https://amorsaude.cvortex.com/wos/service-flow/6a2dae06fa8f3643ac484f42
+Muriaé |https://amorsaude.cvortex.com/wos/service-flow/6a2dae0fc6704b6d3dd6a0eb
+Nacional |https://amorsaude.cvortex.com/wos/service-flow/6a2dae0cc6704b6d3dd6a0e7
+Natal |https://amorsaude.cvortex.com/wos/service-flow/6a2dacf3fa8f3643ac484ebe
+Natal Zona Norte|https://amorsaude.cvortex.com/wos/service-flow/6a2dae3de678af7c400b3257
+Navegantes |https://amorsaude.cvortex.com/wos/service-flow/6a2dae04c6704b6d3dd6a0e1
+Niterói |https://amorsaude.cvortex.com/wos/service-flow/6a2dad39e678af7c400b31e8
+Nome da Unidade| https://amorsaude.cvortex.com/wos/service-flow/6a2dae3afa8f3643ac484f5e
+Nossa Senhora do Socorro|https://amorsaude.cvortex.com/wos/service-flow/6a2dadeee678af7c400b323c
+Nova Friburgo|https://amorsaude.cvortex.com/wos/service-flow/6a2dad55e678af7c400b31f8
+Nova Iguaçu|https://amorsaude.cvortex.com/wos/service-flow/6a2dae36e678af7c400b3252
+Nova Lima|https://amorsaude.cvortex.com/wos/service-flow/6a2dae0ec6704b6d3dd6a0ea
+Nova Serrana|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5dfa8f3643ac484ef1
+Novo Gama|https://amorsaude.cvortex.com/wos/service-flow/6a2dad66c6704b6d3dd6a0a0
+Novo Hamburgo|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf5e678af7c400b3240
+Olímpia|https://amorsaude.cvortex.com/wos/service-flow/6a2dad2ac6704b6d3dd6a08d
+Olinda |https://amorsaude.cvortex.com/wos/service-flow/6a2dad5cfa8f3643ac484ef0
+Osasco Centro e Baronesa|https://amorsaude.cvortex.com/wos/service-flow/6a2dacf0fa8f3643ac484ebd
+Ouricuri |https://amorsaude.cvortex.com/wos/service-flow/6a2dad31e678af7c400b31e5
+Ourinhos |https://amorsaude.cvortex.com/wos/service-flow/6a2dadefc6704b6d3dd6a0d6
+Pacajus |https://amorsaude.cvortex.com/wos/service-flow/6a2dad0fe678af7c400b31d9
+Palmares |https://amorsaude.cvortex.com/wos/service-flow/6a2dadede678af7c400b323b
+Palmas |https://amorsaude.cvortex.com/wos/service-flow/6a2dad62c6704b6d3dd6a09d
+Palmeira dos Índios|https://amorsaude.cvortex.com/wos/service-flow/6a2dad3de678af7c400b31eb
+Pará de Minas|https://amorsaude.cvortex.com/wos/service-flow/6a2dadeee678af7c400b323d
+Paracatu |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1ec6704b6d3dd6a0f2
+Paragominas |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1ffa8f3643ac484f4c
+Nova Serrana|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5dfa8f3643ac484ef1
+Paranaguá |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1dc6704b6d3dd6a0f1
+Paranavaí |https://amorsaude.cvortex.com/wos/service-flow/6a2dadf0c6704b6d3dd6a0d7
+Parauapebas |https://amorsaude.cvortex.com/wos/service-flow/6a2dae10e678af7c400b3245
+Parintins |https://amorsaude.cvortex.com/wos/service-flow/6a2dae03fa8f3643ac484f40
+Parnaíba |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1cfa8f3643ac484f4b
+Parnamirim |https://amorsaude.cvortex.com/wos/service-flow/6a2dae27e678af7c400b324d
+Parobé |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1dc6704b6d3dd6a0f0
+Passo Fundo|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf9c6704b6d3dd6a0da
+Passos |https://amorsaude.cvortex.com/wos/service-flow/6a2dae1ac6704b6d3dd6a0ef
+Pato Branco|https://amorsaude.cvortex.com/wos/service-flow/6a2dad07fa8f3643ac484ec5
+Patos |https://amorsaude.cvortex.com/wos/service-flow/6a2dad9fc6704b6d3dd6a0ba
+Patos de Minas|https://amorsaude.cvortex.com/wos/service-flow/6a2dad14c6704b6d3dd6a084
+Patrocínio |https://amorsaude.cvortex.com/wos/service-flow/6a2dad67e678af7c400b31fe
+Paulista |https://amorsaude.cvortex.com/wos/service-flow/6a2dae17e678af7c400b3249
+Paulo Afonso|https://amorsaude.cvortex.com/wos/service-flow/6a2dad12fa8f3643ac484ec9
+Pelotas |https://amorsaude.cvortex.com/wos/service-flow/6a2dadb1c6704b6d3dd6a0c3
+Penha RJ|https://amorsaude.cvortex.com/wos/service-flow/6a2dadbac6704b6d3dd6a0c8
+Penha SP|https://amorsaude.cvortex.com/wos/service-flow/6a2dadacfa8f3643ac484f15
+Petrolina |https://amorsaude.cvortex.com/wos/service-flow/6a2dadfac6704b6d3dd6a0db
+Petrópolis |https://amorsaude.cvortex.com/wos/service-flow/6a2dae37e678af7c400b3253
+Picos |https://amorsaude.cvortex.com/wos/service-flow/6a2dad90c6704b6d3dd6a0b5
+Pindamonhangaba |https://amorsaude.cvortex.com/wos/service-flow/6a2dad30e678af7c400b31e4
+Piracicaba Centro e Vila Sonia|https://amorsaude.cvortex.com/wos/service-flow/6a2dad20e678af7c400b31e0
+Piraporinha e MBoi Mirim|https://amorsaude.cvortex.com/wos/service-flow/6a2dacfbe678af7c400b31d0
+Piraquara|https://amorsaude.cvortex.com/wos/service-flow/6a2dad9dfa8f3643ac484f0f
+Pirassununga|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb2c6704b6d3dd6a0c4
+Planaltina de Goiás|https://amorsaude.cvortex.com/wos/service-flow/6a2dadbefa8f3643ac484f1a
+Poá |https://amorsaude.cvortex.com/wos/service-flow/6a2dad18fa8f3643ac484ecd
+Poços de Caldas|https://amorsaude.cvortex.com/wos/service-flow/6a2dadc7c6704b6d3dd6a0cb
+Ponta Grossa|https://amorsaude.cvortex.com/wos/service-flow/6a2dadeafa8f3643ac484f37
+Ponta Grossa Nova Rússia|https://amorsaude.cvortex.com/wos/service-flow/6a2dadebc6704b6d3dd6a0d4
+Ponta Porã|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf2fa8f3643ac484f38
+Ponte Nova|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1ac6704b6d3dd6a087
+Porto Alegre Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dadc2fa8f3643ac484f20
+Porto Alegre Norte|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf3fa8f3643ac484f39
+Porto Alegre Sul e Restinga|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1fe678af7c400b31df
+Ponta Feliz|https://amorsaude.cvortex.com/wos/service-flow/6a2dae45c6704b6d3dd6a0fd
+---
+Porto Seguro|https://amorsaude.cvortex.com/wos/service-flow/6a2dae21fa8f3643ac484f4f
+Porto Velho|https://amorsaude.cvortex.com/wos/service-flow/6a2daddafa8f3643ac484f2c
+Pouso Alegre|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1ce678af7c400b31dd
+Presidente Prudente|https://amorsaude.cvortex.com/wos/service-flow/6a2dadcafa8f3643ac484f24
+Queimados|https://amorsaude.cvortex.com/wos/service-flow/6a2dae11e678af7c400b3246
+Quixadá|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf3e678af7c400b323e
+Recife Afogados|https://amorsaude.cvortex.com/wos/service-flow/6a2dad34fa8f3643ac484edb
+Recife Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1bfa8f3643ac484ece
+Recife Encruzilhada|https://amorsaude.cvortex.com/wos/service-flow/6a2dae47c6704b6d3dd6a0ff
+Registro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1ce678af7c400b31de
+Réplica|https://amorsaude.cvortex.com/wos/service-flow/6a2dad11e678af7c400b31da
+Ribeirão das Neves e Justinópolis|https://amorsaude.cvortex.com/wos/service-flow/6a2dada3e678af7c400b3218
+Ribeirão Preto|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1efa8f3643ac484ecf
+Rio Branco|https://amorsaude.cvortex.com/wos/service-flow/6a2dad9cfa8f3643ac484f0e
+Rio Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dada1fa8f3643ac484f10
+Rio Claro|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd3c6704b6d3dd6a0cf
+Rio das Ostras|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5ae678af7c400b31fa
+Rio Grande|https://amorsaude.cvortex.com/wos/service-flow/6a2dade9fa8f3643ac484f36
+RJ Bangu|https://amorsaude.cvortex.com/wos/service-flow/6a2dae26c6704b6d3dd6a0f3
+RJ Cabo Frio|https://amorsaude.cvortex.com/wos/service-flow/6a2dae46c6704b6d3dd6a0fe
+RJ Campo Grande|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf5e678af7c400b323f
+RJ Irajá|https://amorsaude.cvortex.com/wos/service-flow/6a2dae43e678af7c400b325b
+RJ Realengo|https://amorsaude.cvortex.com/wos/service-flow/6a2dae02fa8f3643ac484f3f
+Rondonópolis |https://amorsaude.cvortex.com/wos/service-flow/6a2dadf6fa8f3643ac484f3b
+Russas |https://amorsaude.cvortex.com/wos/service-flow/6a2dae18fa8f3643ac484f49
+Sabará|https://amorsaude.cvortex.com/wos/service-flow/6a2dad73e678af7c400b3206
+Salto |https://amorsaude.cvortex.com/wos/service-flow/6a2dad49c6704b6d3dd6a096
+Salvador |https://amorsaude.cvortex.com/wos/service-flow/6a2dadc0fa8f3643ac484f1d
+Samambaia e Recanto|https://amorsaude.cvortex.com/wos/service-flow/6a2dacf0e678af7c400b31cd
+Santa Bárbara|https://amorsaude.cvortex.com/wos/service-flow/6a2dadd5e678af7c400b322e
+Santa Cruz do Capibaribe|https://amorsaude.cvortex.com/wos/service-flow/6a2dad57c6704b6d3dd6a09a
+Santa Cruz do Sul|https://amorsaude.cvortex.com/wos/service-flow/6a2dad0ce678af7c400b31d6
+Santa Luzia|https://amorsaude.cvortex.com/wos/service-flow/6a2dad51fa8f3643ac484eea
+Santa Maria|https://amorsaude.cvortex.com/wos/service-flow/6a2dad4ffa8f3643ac484ee9
+Santa Maria Pinheiro Machado|https://amorsaude.cvortex.com/wos/service-flow/6a2dad5ffa8f3643ac484ef3
+Santarém |https://amorsaude.cvortex.com/wos/service-flow/6a2dae09c6704b6d3dd6a0e4
+Santo André|https://amorsaude.cvortex.com/wos/service-flow/6a2dadc5e678af7c400b3227
+Santo Antônio de Jesus|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb3e678af7c400b3221
+Santos|https://amorsaude.cvortex.com/wos/service-flow/6a2dad2efa8f3643ac484ed8
+São Bernardo do Campo|https://amorsaude.cvortex.com/wos/service-flow/6a2dad2efa8f3643ac484ed9
+São Carlos|https://amorsaude.cvortex.com/wos/service-flow/6a2dad24c6704b6d3dd6a08b
+São Gonçalo|https://amorsaude.cvortex.com/wos/service-flow/6a2dae36fa8f3643ac484f5b
+São João da Boa Vista|https://amorsaude.cvortex.com/wos/service-flow/6a2dad26c6704b6d3dd6a08c
+São João de Meriti|https://amorsaude.cvortex.com/wos/service-flow/6a2dad41e678af7c400b31ed
+São João Del Rei|https://amorsaude.cvortex.com/wos/service-flow/6a2dada7e678af7c400b321a
+São Joaquim da Barra|https://amorsaude.cvortex.com/wos/service-flow/6a2dad8dfa8f3643ac484f07
+São José do Rio Preto|https://amorsaude.cvortex.com/wos/service-flow/6a2dad3afa8f3643ac484ee2
+São José dos Campos|https://amorsaude.cvortex.com/wos/service-flow/6a2dad37fa8f3643ac484edf
+São José dos Pinhais|https://amorsaude.cvortex.com/wos/service-flow/6a2dade9fa8f3643ac484f35
+São José e Palhoça|https://amorsaude.cvortex.com/wos/service-flow/6a2dad43e678af7c400b31ef
+São Luís e São José De Ribamar|https://amorsaude.cvortex.com/wos/service-flow/6a2dadade678af7c400b321e
+São Mateus|https://amorsaude.cvortex.com/wos/service-flow/6a2dad3ec6704b6d3dd6a091
+São Miguel|https://amorsaude.cvortex.com/wos/service-flow/6a2dad45e678af7c400b31f0
+São Roque|https://amorsaude.cvortex.com/wos/service-flow/6a2dadbcfa8f3643ac484f19
+São Vicente|https://amorsaude.cvortex.com/wos/service-flow/6a2dad42e678af7c400b31ee
+Sapopemba|https://amorsaude.cvortex.com/wos/service-flow/6a2dad08c6704b6d3dd6a07e
+Sapucaia do Sul e São Leopoldo|https://amorsaude.cvortex.com/wos/service-flow/6a2dade7e678af7c400b3238
+Senador Canedo|https://amorsaude.cvortex.com/wos/service-flow/6a2dadbde678af7c400b3224
+Serra e Serra Sede|https://amorsaude.cvortex.com/wos/service-flow/6a2dad45c6704b6d3dd6a093
+Serrinha |https://amorsaude.cvortex.com/wos/service-flow/6a2dad11fa8f3643ac484ec8
+Sertãozinho|https://amorsaude.cvortex.com/wos/service-flow/6a2dad3dc6704b6d3dd6a090
+Sete Lagoas|https://amorsaude.cvortex.com/wos/service-flow/6a2dace7fa8f3643ac484eb8
+Sinop |https://amorsaude.cvortex.com/wos/service-flow/6a2dadb5e678af7c400b3223
+Sobradinho e Planaltina|https://amorsaude.cvortex.com/wos/service-flow/6a2dacedfa8f3643ac484ebb
+Sobral |https://amorsaude.cvortex.com/wos/service-flow/6a2dada0c6704b6d3dd6a0bb
+Sorocaba e Votorantim|https://amorsaude.cvortex.com/wos/service-flow/6a2dad17c6704b6d3dd6a085
+SP Campo Limpo|https://amorsaude.cvortex.com/wos/service-flow/6a2dada6c6704b6d3dd6a0be
+SP Cidade Ademar|https://amorsaude.cvortex.com/wos/service-flow/6a2dadc6fa8f3643ac484f21
+SP Pinheiros|https://amorsaude.cvortex.com/wos/service-flow/6a2dad73c6704b6d3dd6a0a4
+Sul Fluminense|https://amorsaude.cvortex.com/wos/service-flow/69b73505a9b1995aacb048d5
+Sumaré|https://amorsaude.cvortex.com/wos/service-flow/6a2dad99fa8f3643ac484f0c
+Surubim |https://amorsaude.cvortex.com/wos/service-flow/6a2dadf8c6704b6d3dd6a0d9
+Suzano |https://amorsaude.cvortex.com/wos/service-flow/6a2dad3ffa8f3643ac484ee3
+Suzano Odonto|https://amorsaude.cvortex.com/wos/service-flow/6a2dadb1fa8f3643ac484f16
+Taboão da Serra|https://amorsaude.cvortex.com/wos/service-flow/6a2dad0de678af7c400b31d7
+Taboão da Serra Jardim Pirajussara|https://amorsaude.cvortex.com/wos/service-flow/6a2dad7bfa8f3643ac484f00
+Tangará da Serra|https://amorsaude.cvortex.com/wos/service-flow/6a2dada9e678af7c400b321c
+Taguatinga e Vicente Pires|https://amorsaude.cvortex.com/wos/service-flow/6a2dace9e678af7c400b31c8
+Tatuapé |https://amorsaude.cvortex.com/wos/service-flow/6a2dad9be678af7c400b3215
+Tatuí |https://amorsaude.cvortex.com/wos/service-flow/6a2dad4afa8f3643ac484ee8
+Taubaté |https://amorsaude.cvortex.com/wos/service-flow/6a2dad2ffa8f3643ac484eda
+Teixeira de Freitas|https://amorsaude.cvortex.com/wos/service-flow/6a2dae44e678af7c400b325c
+Teófilo Otoni|https://amorsaude.cvortex.com/wos/service-flow/6a2dada4e678af7c400b3219
+Teresina Centro|https://amorsaude.cvortex.com/wos/service-flow/6a2dad9de678af7c400b3216
+Teresina Leste|https://amorsaude.cvortex.com/wos/service-flow/6a2dadafc6704b6d3dd6a0c1
+Teresópolis|https://amorsaude.cvortex.com/wos/service-flow/6a2dad29fa8f3643ac484ed5
+Timbaúba |https://amorsaude.cvortex.com/wos/service-flow/6a2dae14fa8f3643ac484f46
+Toledo |https://amorsaude.cvortex.com/wos/service-flow/6a2dacf9fa8f3643ac484ec1
+Três Corações|https://amorsaude.cvortex.com/wos/service-flow/6a2dacfffa8f3643ac484ec2
+Três Lagoas|https://amorsaude.cvortex.com/wos/service-flow/6a2dad31c6704b6d3dd6a08e
+Três Rios|https://amorsaude.cvortex.com/wos/service-flow/6a2dae14e678af7c400b3248
+Trindade |https://amorsaude.cvortex.com/wos/service-flow/6a2dadacc6704b6d3dd6a0c0
+Tubarão |https://amorsaude.cvortex.com/wos/service-flow/6a2dae41c6704b6d3dd6a0fc
+Tucuruí |https://amorsaude.cvortex.com/wos/service-flow/6a2dad2ce678af7c400b31e3
+Tucuruvi |https://amorsaude.cvortex.com/wos/service-flow/6a2dadc8fa8f3643ac484f23
+Tupã |https://amorsaude.cvortex.com/wos/service-flow/6a2dad06e678af7c400b31d5
+Ubá |https://amorsaude.cvortex.com/wos/service-flow/6a2dadc4e678af7c400b3225
+Uberaba |https://amorsaude.cvortex.com/wos/service-flow/6a2dad9bfa8f3643ac484f0d
+Uberlândia e Araguari|https://amorsaude.cvortex.com/wos/service-flow/6a2dacf1c6704b6d3dd6a076
+Umuarama|https://amorsaude.cvortex.com/wos/service-flow/6a2daddce678af7c400b3232
+Valença |https://amorsaude.cvortex.com/wos/service-flow/6a2dad01e678af7c400b31d3
+Valinhos|https://amorsaude.cvortex.com/wos/service-flow/6a2dadbbfa8f3643ac484f18
+Valparaíso |https://amorsaude.cvortex.com/wos/service-flow/6a2dad38fa8f3643ac484ee0
+Varginha |https://amorsaude.cvortex.com/wos/service-flow/6a2dad69e678af7c400b31ff
+Várzea Grande|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf7fa8f3643ac484f3c
+Várzea Paulista|https://amorsaude.cvortex.com/wos/service-flow/6a2dad1ffa8f3643ac484ed0
+Vespasiano |https://amorsaude.cvortex.com/wos/service-flow/6a2dadc7fa8f3643ac484f22
+Viamão e Viamão Santa Isabel|https://amorsaude.cvortex.com/wos/service-flow/6a2dadf4fa8f3643ac484f3a
+Viana |https://amorsaude.cvortex.com/wos/service-flow/6a2dada5c6704b6d3dd6a0bd
+Viçosa |https://amorsaude.cvortex.com/wos/service-flow/6a2dadc4e678af7c400b3226
+Vila Andrade|https://amorsaude.cvortex.com/wos/service-flow/6a2dad85e678af7c400b320c
+Vila Maria|https://amorsaude.cvortex.com/wos/service-flow/6a2dadc3c6704b6d3dd6a0ca
+Vila Velha|https://amorsaude.cvortex.com/wos/service-flow/6a2dae25fa8f3643ac484f52
+Vilhena |https://amorsaude.cvortex.com/wos/service-flow/6a2dadcffa8f3643ac484f26
+Vitória |https://amorsaude.cvortex.com/wos/service-flow/6a2dad4ec6704b6d3dd6a099
+Vitória da Conquista e Ibirapuera|https://amorsaude.cvortex.com/wos/service-flow/6a2dad33e678af7c400b31e7
+Vitória de Santo Antão|https://amorsaude.cvortex.com/wos/service-flow/6a2dae01e678af7c400b3243
+Votuporanga|https://amorsaude.cvortex.com/wos/service-flow/6a2dae42fa8f3643ac484f60

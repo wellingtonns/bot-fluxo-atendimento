@@ -1,9 +1,11 @@
+import fs from "node:fs/promises";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { Browser, chromium, Locator, Page } from "playwright";
 import { BotConfig, RuleTiming } from "./config.js";
 import {
+  errorScreenshotsDir,
   firstVisible,
   info,
   ok,
@@ -37,6 +39,16 @@ export class AutomationError extends Error {
   }
 }
 
+export class WhatsappAccountPendingError extends AutomationError {
+  reason: string;
+
+  constructor(reason: string, details: AutomationErrorDetails = {}) {
+    super(reason, details);
+    this.name = "WhatsappAccountPendingError";
+    this.reason = reason;
+  }
+}
+
 export type AlreadyConfiguredResult = {
   alreadyConfigured: boolean;
   reason: string;
@@ -56,6 +68,18 @@ type OptionMatchMode = "exact" | "contains" | "containsIgnoringNumber" | "exactI
 type VisibleOption = {
   text: string;
   locator: Locator;
+};
+
+type WhatsappAccountSelectionResult = {
+  status: "selected" | "ambiguous" | "not_found";
+  selected: VisibleOption | null;
+  candidates: VisibleOption[];
+  reason?: string;
+};
+
+type VisibleOptionLookupResult = {
+  match: VisibleOption | null;
+  options: VisibleOption[];
 };
 
 type FastOptionSelectParams = {
@@ -499,6 +523,108 @@ export async function updateActionBlock(page: Page, blockText: TextMatcher, opti
   await updateAllBlocks(page, "action", blockText, optionName, "acao", screenshotPrefix);
 }
 
+export async function updateAllEnviarWhatsappAccountBlocks(page: Page): Promise<void> {
+  const config = getConfig();
+  const nodeIds = await getWorkflowNodeIdsByText(page, "any", { includes: ["Enviar Whatsapp"] });
+  const total = nodeIds.length;
+  info(`Foram encontrados ${total} blocos Enviar Whatsapp para validar Conta`);
+
+  if (!total) {
+    info("Nenhum bloco Enviar Whatsapp encontrado. Seguindo.");
+    return;
+  }
+
+  let changedCount = 0;
+  let skippedCount = 0;
+
+  for (const [index, nodeId] of nodeIds.entries()) {
+    const step = index + 1;
+    const debugName = `Enviar Whatsapp ${step}`;
+    setCurrentRuleField("Conta");
+
+    try {
+      info(`Atualizando Conta do bloco Enviar Whatsapp ${step}/${total}`);
+      info(`Clinica atual: ${config.clinicName}`);
+      await clickWorkflowNodeById(page, "any", nodeId, debugName);
+      await waitForPropertiesPanel(page, /Propriedades d/i);
+
+      if (config.attemptNumber > 1) {
+        const retryWaitMs = getCurrentTiming().waitAfterBlockClickOnRetryMs;
+        info(`Segunda tentativa: aguardando ${retryWaitMs}ms para o painel carregar`);
+        await page.waitForTimeout(retryWaitMs);
+      }
+
+      let savedThisBlock = false;
+
+      for (let blockAttempt = 1; blockAttempt <= 2; blockAttempt += 1) {
+        const currentAccount = await getCurrentWhatsappAccountValue(page);
+        if (doesTextContainClinic(currentAccount, config.clinicName)) {
+          ok(`Conta ja pertence a clinica ${config.clinicName}: ${currentAccount}`);
+          const pendingSaveButton = await findSaveChangesButton(page);
+          if (pendingSaveButton) {
+            info(`Conta ja esta correta, mas existem alteracoes pendentes no bloco Enviar Whatsapp ${step}/${total}. Salvando.`);
+            await saveChanges(page);
+            changedCount += 1;
+            ok(`Alteracoes pendentes salvas no bloco Enviar Whatsapp ${step}/${total}`);
+            await takeScreenshot(page, `enviar-whatsapp-conta-${step}-salvo.png`);
+          } else if (savedThisBlock) {
+            changedCount += 1;
+            ok(`Alteracoes da Conta salvas e confirmadas no bloco Enviar Whatsapp ${step}/${total}`);
+            await takeScreenshot(page, `enviar-whatsapp-conta-${step}-salvo.png`);
+          } else {
+            info("[SKIP] Nenhuma alteracao necessaria neste bloco.");
+            skippedCount += 1;
+          }
+          break;
+        }
+
+        info(`Conta atual nao pertence a clinica: ${currentAccount || "vazio"}`);
+        info(`Tentativa ${blockAttempt}/2 para salvar Conta do bloco Enviar Whatsapp ${step}/${total}`);
+        const selectedAccount = await selectWhatsappAccountInPanel(page, config.clinicName, currentAccount, debugName);
+        const updatedAccount = await getCurrentWhatsappAccountValue(page);
+
+        if (!doesTextContainClinic(updatedAccount || selectedAccount, config.clinicName)) {
+          throw new AutomationError(`Campo Conta nao ficou preenchido com a clinica ${config.clinicName}. Valor atual: ${updatedAccount || "vazio"}`, {
+            blockName: debugName,
+            fieldName: "Conta",
+            expectedValue: selectedAccount
+          });
+        }
+
+        ok(`Campo Conta preenchido com: ${updatedAccount || selectedAccount}`);
+        info(`Salvando alteracoes obrigatoriamente no bloco Enviar Whatsapp ${step}/${total}`);
+        await saveChanges(page);
+        savedThisBlock = true;
+
+        const confirmedAccount = await getCurrentWhatsappAccountValue(page);
+        if (doesTextContainClinic(confirmedAccount || updatedAccount || selectedAccount, config.clinicName)) {
+          changedCount += 1;
+          ok(`Alteracoes da Conta salvas e confirmadas no bloco Enviar Whatsapp ${step}/${total}`);
+          await takeScreenshot(page, `enviar-whatsapp-conta-${step}-salvo.png`);
+          break;
+        }
+
+        console.warn(`[WARN] Conta do bloco Enviar Whatsapp ${step}/${total} ainda nao confirmou apos salvar. Valor atual: ${confirmedAccount || "vazio"}`);
+
+        if (blockAttempt === 2) {
+          throw new AutomationError(`Conta do bloco Enviar Whatsapp ${step}/${total} nao confirmou apos salvar.`, {
+            blockName: debugName,
+            fieldName: "Conta",
+            expectedValue: selectedAccount
+          });
+        }
+      }
+    } finally {
+      setCurrentRuleField();
+    }
+  }
+
+  ok(
+    `Validacao de Conta concluida em todos os blocos Enviar Whatsapp. ` +
+      `Alterados: ${changedCount}. Ja corretos: ${skippedCount}. Total: ${total}.`
+  );
+}
+
 export async function updateAllTransferToBotBlocks(page: Page): Promise<void> {
   await updateAllBlocks(
     page,
@@ -841,7 +967,7 @@ async function waitAndSelectBotFlowPesquisaSatisfacaoFast(page: Page, clinicName
 
       logPesquisaSatisfacaoCandidates(stableCandidates.length ? stableCandidates : candidates, clinicName);
       ok(`Melhor opcao escolhida: ${selected.option.text}`);
-      await selected.option.locator.click();
+      await clickBotFlowOption(page, selected.option);
       return selected.option.text;
     }
 
@@ -858,6 +984,36 @@ async function waitAndSelectBotFlowPesquisaSatisfacaoFast(page: Page, clinicName
       availableOptions: lastOptions.map((option) => option.text)
     }
   );
+}
+
+async function clickBotFlowOption(page: Page, option: { text: string; locator: Locator }): Promise<void> {
+  const clickable = await getClickableOptionLocator(option.locator);
+
+  await clickable.click({ timeout: 1000 }).catch(async () => {
+    await clickable.click({ timeout: 1000, force: true }).catch(async () => {
+      const optionByText = page.getByText(option.text, { exact: false }).last();
+      await optionByText.click({ timeout: 1000, force: true });
+    });
+  });
+}
+
+async function getClickableOptionLocator(locator: Locator): Promise<Locator> {
+  const roleOption = locator.locator("xpath=ancestor-or-self::*[@role='option'][1]");
+  if (await roleOption.count().catch(() => 0)) {
+    return roleOption.first();
+  }
+
+  const ngOption = locator.locator("xpath=ancestor-or-self::*[contains(@class,'ng-option')][1]");
+  if (await ngOption.count().catch(() => 0)) {
+    return ngOption.first();
+  }
+
+  const listItem = locator.locator("xpath=ancestor-or-self::*[self::li or self::div][1]");
+  if (await listItem.count().catch(() => 0)) {
+    return listItem.first();
+  }
+
+  return locator;
 }
 
 function getPesquisaSatisfacaoCandidates(
@@ -1073,7 +1229,7 @@ export async function getCurrentBotFlowValue(page: Page): Promise<string> {
   const input = await findBotFlowInput(page);
   const inputValue = normalizeVisibleText(await input.inputValue().catch(() => ""));
 
-  if (inputValue) {
+  if (inputValue && !isBotFlowSearchTerm(inputValue)) {
     return inputValue;
   }
 
@@ -1101,14 +1257,21 @@ export async function getCurrentBotFlowValue(page: Page): Promise<string> {
 }
 
 export function isBotFlowAlreadyCorrect(currentValue: string, clinicName?: string): boolean {
-  const normalizedValue = normalizeText(currentValue);
-
-  if (!normalizedValue || !normalizedValue.includes("pesquisa") || !normalizedValue.includes("satisfacao")) {
+  if (!currentValue || isBotFlowSearchTerm(currentValue)) {
     return false;
   }
 
-  const normalizedClinic = clinicName ? normalizeText(clinicName) : "";
-  return !normalizedClinic || normalizedValue.includes(normalizedClinic);
+  if (clinicName) {
+    return scorePesquisaSatisfacaoOption(currentValue, clinicName) >= 0;
+  }
+
+  const normalizedValue = normalizeText(currentValue);
+  return normalizedValue.includes("pesquisa") && normalizedValue.includes("satisfacao");
+}
+
+function isBotFlowSearchTerm(value: string): boolean {
+  const normalized = normalizeText(value);
+  return normalized === "pes" || normalized === "pesq" || normalized === "pesqui" || normalized === "pesquisa";
 }
 
 async function waitForBotFlowOptions(page: Page): Promise<Array<{ text: string; locator: Locator }>> {
@@ -1169,20 +1332,51 @@ async function collectVisibleOptions(page: Page): Promise<Array<{ text: string; 
     "[class*='dropdown'] *",
     "[class*='select'] *"
   ];
-  const found = new Map<string, { text: string; locator: Locator }>();
+
+  return collectVisibleOptionsFromSelectors(page, selectors, 200);
+}
+
+async function collectVisibleOptionsFast(page: Page): Promise<VisibleOption[]> {
+  const directSelectors = [
+    "[role='option']",
+    ".ng-option",
+    ".ng-dropdown-panel [role='option']",
+    ".ng-dropdown-panel .ng-option",
+    "[role='listbox'] [role='option']",
+    "[role='listbox'] li",
+    "[role='listbox'] div"
+  ];
+  const directOptions = await collectVisibleOptionsFromSelectors(page, directSelectors, 80);
+
+  if (directOptions.length) {
+    return directOptions;
+  }
+
+  const fallbackSelectors = [
+    ".ng-dropdown-panel *",
+    "[class*='option']",
+    "[class*='dropdown'] *",
+    "[class*='select'] *"
+  ];
+
+  return collectVisibleOptionsFromSelectors(page, fallbackSelectors, 120);
+}
+
+async function collectVisibleOptionsFromSelectors(
+  page: Page,
+  selectors: string[],
+  maxPerSelector: number
+): Promise<VisibleOption[]> {
+  const found = new Map<string, VisibleOption>();
 
   for (const selector of selectors) {
     const locator = page.locator(selector);
     const count = await locator.count().catch(() => 0);
 
-    for (let index = 0; index < Math.min(count, 200); index += 1) {
+    for (let index = 0; index < Math.min(count, maxPerSelector); index += 1) {
       const item = locator.nth(index);
 
       if (!(await item.isVisible().catch(() => false))) {
-        continue;
-      }
-
-      if (!(await item.isEnabled().catch(() => true))) {
         continue;
       }
 
@@ -1203,29 +1397,37 @@ async function collectVisibleOptions(page: Page): Promise<Array<{ text: string; 
 }
 
 async function collectBotFlowOptions(page: Page): Promise<Array<{ text: string; locator: Locator }>> {
-  const selectors = [
+  const directSelectors = [
     "[role='option']",
-    "[role='listbox'] *",
     ".ng-option",
+    ".ng-dropdown-panel [role='option']",
+    ".ng-dropdown-panel .ng-option",
+    "[role='listbox'] [role='option']",
+    "[role='listbox'] li",
+    "[role='listbox'] div"
+  ];
+  const directOptions = await collectBotFlowOptionsFromSelectors(page, directSelectors, 80);
+
+  if (directOptions.length) {
+    return directOptions;
+  }
+
+  const selectors = [
     ".ng-dropdown-panel *",
     "[class*='option']",
     "[class*='dropdown'] *",
     "[class*='select'] *"
   ];
-  const found = new Map<string, { text: string; locator: Locator }>();
+  const found = new Map<string, VisibleOption>();
 
   for (const selector of selectors) {
     const locator = page.locator(selector);
     const count = await locator.count().catch(() => 0);
 
-    for (let index = 0; index < Math.min(count, 200); index += 1) {
+    for (let index = 0; index < Math.min(count, 120); index += 1) {
       const item = locator.nth(index);
 
       if (!(await item.isVisible().catch(() => false))) {
-        continue;
-      }
-
-      if (!(await item.isEnabled().catch(() => true))) {
         continue;
       }
 
@@ -1245,14 +1447,10 @@ async function collectBotFlowOptions(page: Page): Promise<Array<{ text: string; 
   const visibleTextCandidates = page.locator("body *").filter({ hasText: /Pesquisa|Satisfa[cç][aã]o|Satisfacao/i });
   const visibleTextCount = await visibleTextCandidates.count().catch(() => 0);
 
-  for (let index = 0; index < Math.min(visibleTextCount, 200); index += 1) {
+  for (let index = 0; index < Math.min(visibleTextCount, 120); index += 1) {
     const item = visibleTextCandidates.nth(index);
 
     if (!(await item.isVisible().catch(() => false))) {
-      continue;
-    }
-
-    if (!(await item.isEnabled().catch(() => true))) {
       continue;
     }
 
@@ -1265,6 +1463,40 @@ async function collectBotFlowOptions(page: Page): Promise<Array<{ text: string; 
 
     if (!found.has(normalized)) {
       found.set(normalized, { text, locator: item });
+    }
+  }
+
+  return Array.from(found.values());
+}
+
+async function collectBotFlowOptionsFromSelectors(
+  page: Page,
+  selectors: string[],
+  maxPerSelector: number
+): Promise<VisibleOption[]> {
+  const found = new Map<string, VisibleOption>();
+
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    const count = await locator.count().catch(() => 0);
+
+    for (let index = 0; index < Math.min(count, maxPerSelector); index += 1) {
+      const item = locator.nth(index);
+
+      if (!(await item.isVisible().catch(() => false))) {
+        continue;
+      }
+
+      const text = normalizeVisibleText(await item.innerText().catch(() => ""));
+      const normalized = normalizeText(text);
+
+      if (!isReasonableBotFlowOptionText(text)) {
+        continue;
+      }
+
+      if (!found.has(normalized)) {
+        found.set(normalized, { text, locator: item });
+      }
     }
   }
 
@@ -1344,6 +1576,560 @@ async function waitForPropertiesPanel(page: Page, title: RegExp): Promise<void> 
   await page.getByText(title).first().waitFor({ state: "visible", timeout: 20000 });
 }
 
+async function getCurrentWhatsappAccountValue(page: Page): Promise<string> {
+  const field = await findMuiAutocompleteInputByLegend(page, "Conta")
+    .catch(() => findPropertiesControlByLabelPosition(page, "Conta"))
+    .catch(() => null);
+
+  if (field && await field.isVisible().catch(() => false)) {
+    const value = normalizeVisibleText(await field.inputValue().catch(() => ""));
+    if (value) {
+      return value;
+    }
+
+    const text = normalizeVisibleText(await field.innerText().catch(() => ""));
+    const cleaned = text.replace(/Conta:?/i, "").trim();
+    if (cleaned) {
+      return cleaned;
+    }
+  }
+
+  return "";
+}
+
+async function selectWhatsappAccountInPanel(
+  page: Page,
+  clinicName: string,
+  currentAccount: string,
+  blockName: string
+): Promise<string> {
+  const accountInput = await findMuiAutocompleteInputByLegend(page, "Conta").catch(() => null);
+  const field = accountInput ?? await waitForPropertiesControlByLabelPosition(page, "Conta");
+  await field.waitFor({ state: "visible", timeout: 20000 });
+  await field.click({ timeout: 1000 }).catch(async () => {
+    const clicked = await clickPropertiesControlBelowLabelByCoordinates(page, "Conta");
+    if (!clicked) {
+      await field.click({ timeout: 1000, force: true });
+    }
+  });
+  await waitStep("apos clicar no campo", getCurrentTiming().delayAfterFieldClickMs);
+  const searchInput = accountInput ?? await findActiveDropdownInput(page, field);
+  await searchInput.press("Control+A").catch(() => undefined);
+  await searchInput.press("Backspace").catch(() => undefined);
+  await searchInput.fill(clinicName).catch(async () => {
+    await page.keyboard.type(clinicName);
+  });
+
+  const config = getConfig();
+  const startedAt = Date.now();
+  let lastOptions: VisibleOption[] = [];
+  let firstCandidateSeen = false;
+
+  info(`Procurando Conta contendo: ${clinicName}`);
+
+  while (Date.now() - startedAt < config.optionMaxWaitMs) {
+    const options = await collectVisibleOptionsFast(page);
+    lastOptions = options;
+    const preliminary = selectWhatsappAccountForClinic(options, clinicName);
+
+    if (preliminary.candidates.length && !firstCandidateSeen) {
+      firstCandidateSeen = true;
+      await page.waitForTimeout(config.botFlowCollectOptionsStableMs);
+      continue;
+    }
+
+    if (preliminary.status === "selected" && preliminary.selected) {
+      logWhatsappAccountCandidates(preliminary.candidates);
+      ok(getWhatsappAccountSelectedMessage(preliminary));
+      const clickable = await getClickableOptionLocator(preliminary.selected.locator);
+      await clickable.click({ timeout: 800 }).catch(async () => {
+        await clickable.click({ timeout: 800, force: true });
+      });
+      await waitStep("apos selecionar opcao", getCurrentTiming().delayAfterOptionSelectMs);
+      await page.keyboard.press("Escape").catch(() => undefined);
+      return preliminary.selected.text;
+    }
+
+    if (preliminary.status === "ambiguous") {
+      logWhatsappAccountCandidates(preliminary.candidates);
+      console.warn("[WARN] Mais de uma conta diferente encontrada. Revisao manual necessaria.");
+      await registerWhatsappAccountPending(page, {
+        clinicName,
+        url: config.workflowUrl,
+        blockName,
+        currentAccount,
+        reason: preliminary.reason || "CONTA_TELEFONE_AMBIGUA",
+        options: preliminary.candidates.map((option) => option.text)
+      });
+      info("Workflow nao sera salvo para esta clinica.");
+      throw new WhatsappAccountPendingError(preliminary.reason || "CONTA_TELEFONE_AMBIGUA", {
+        blockName,
+        fieldName: "Conta",
+        expectedValue: clinicName,
+        availableOptions: preliminary.candidates.map((option) => option.text)
+      });
+    }
+
+    await page.waitForTimeout(config.optionPollIntervalMs);
+  }
+
+  const finalResult = selectWhatsappAccountForClinic(lastOptions, clinicName);
+  logWhatsappAccountCandidates(finalResult.candidates);
+  console.warn("[WARN] Nenhuma conta da clinica encontrada. Revisao manual necessaria.");
+  await registerWhatsappAccountPending(page, {
+    clinicName,
+    url: config.workflowUrl,
+    blockName,
+    currentAccount,
+    reason: "CONTA_NAO_ENCONTRADA",
+    options: lastOptions.map((option) => option.text)
+  });
+  info("Workflow nao sera salvo para esta clinica.");
+  throw new WhatsappAccountPendingError("CONTA_NAO_ENCONTRADA", {
+    blockName,
+    fieldName: "Conta",
+    expectedValue: clinicName,
+    availableOptions: lastOptions.map((option) => option.text)
+  });
+}
+
+async function waitForPropertiesControlByLabelPosition(page: Page, fieldName: string): Promise<Locator> {
+  const deadline = Date.now() + getCurrentTiming().waitForFieldEnabledTimeoutMs;
+  let lastErrorMessage = "";
+
+  while (Date.now() <= deadline) {
+    const control = await findPropertiesControlByLabelPosition(page, fieldName).catch((error) => {
+      lastErrorMessage = error instanceof Error ? error.message : String(error);
+      return null;
+    });
+
+    if (control && await control.isVisible().catch(() => false) && await control.isEnabled().catch(() => true)) {
+      ok(`Campo ${fieldName} encontrado no painel`);
+      return control;
+    }
+
+    info(`Campo ${fieldName} ainda nao esta pronto, aguardando 250ms`);
+    await page.waitForTimeout(250);
+  }
+
+  throw new AutomationError(
+    `Campo ${fieldName} nao encontrado no painel pelo label. ${lastErrorMessage}`,
+    { fieldName }
+  );
+}
+
+async function findMuiAutocompleteInputByLegend(page: Page, fieldName: string): Promise<Locator> {
+  const expected = normalizeText(fieldName);
+  const inputs = page.locator(
+    "input.MuiAutocomplete-input, input[aria-autocomplete='list'], " +
+      ".MuiAutocomplete-inputRoot input[type='text'], .MuiInputBase-root input[type='text']"
+  );
+  const inputCount = await inputs.count().catch(() => 0);
+
+  for (let index = 0; index < Math.min(inputCount, 120); index += 1) {
+    const input = inputs.nth(index);
+
+    if (!(await input.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    const root = input.locator("xpath=ancestor::*[contains(@class,'MuiInputBase-root')][1]");
+    if (!(await root.count().catch(() => 0))) {
+      continue;
+    }
+
+    const legendText = await getMuiFieldLegendText(root);
+    if (legendText !== expected && !legendText.startsWith(expected)) {
+      continue;
+    }
+
+    ok(`Campo ${fieldName} encontrado pelo autocomplete MUI`);
+    return input;
+  }
+
+  throw new Error(`Autocomplete MUI do campo "${fieldName}" nao encontrado.`);
+}
+
+async function getMuiFieldLegendText(root: Locator): Promise<string> {
+  const legends = root.locator("fieldset legend");
+  const count = await legends.count().catch(() => 0);
+
+  for (let index = 0; index < count; index += 1) {
+    const legend = legends.nth(index);
+    const values = [
+      await legend.innerText().catch(() => ""),
+      await legend.textContent().catch(() => "") || ""
+    ];
+
+    for (const value of values) {
+      const normalized = normalizeText(value);
+      if (normalized) {
+        return normalized;
+      }
+    }
+  }
+
+  return "";
+}
+
+async function clickPropertiesControlBelowLabelByCoordinates(page: Page, fieldName: string): Promise<boolean> {
+  const label = await findExactFieldLabelInProperties(page, fieldName).catch(() => null);
+  const labelBox = label ? await label.boundingBox().catch(() => null) : null;
+
+  if (!labelBox) {
+    return false;
+  }
+
+  const nextLabelBox = await findNextFieldLabelBox(page, labelBox.y, fieldName);
+  const maxY = nextLabelBox ? nextLabelBox.y + 4 : labelBox.y + 95;
+  const candidates = page.locator(".properties *");
+  const count = await candidates.count().catch(() => 0);
+  let best: { x: number; y: number; distance: number; area: number } | null = null;
+
+  for (let index = 0; index < Math.min(count, 500); index += 1) {
+    const item = candidates.nth(index);
+
+    if (!(await item.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    const box = await item.boundingBox().catch(() => null);
+    if (!box || box.width < 120 || box.height < 18) {
+      continue;
+    }
+
+    if (
+      box.y < labelBox.y + labelBox.height - 4 ||
+      box.y + box.height > maxY ||
+      box.x + box.width < labelBox.x ||
+      box.x > labelBox.x + 340
+    ) {
+      continue;
+    }
+
+    const distance = Math.abs(box.y - (labelBox.y + labelBox.height));
+    const area = box.width * box.height;
+
+    if (!best || distance < best.distance || (distance === best.distance && area > best.area)) {
+      best = {
+        x: box.x + box.width - 24,
+        y: box.y + box.height / 2,
+        distance,
+        area
+      };
+    }
+  }
+
+  if (!best) {
+    return false;
+  }
+
+  await page.mouse.click(best.x, best.y);
+  return true;
+}
+
+async function findPropertiesControlByLabelPosition(page: Page, fieldName: string): Promise<Locator> {
+  const label = await findExactFieldLabelInProperties(page, fieldName);
+  const labelBox = await label.boundingBox();
+
+  if (!labelBox) {
+    throw new Error(`Label "${fieldName}" sem posicao visivel.`);
+  }
+
+  const nextLabelBox = await findNextFieldLabelBox(page, labelBox.y, fieldName);
+  const candidates = page.locator(
+    ".properties input, .properties select, .properties [role='combobox'], " +
+      ".properties button, .properties [class*='select'], .properties [class*='dropdown']"
+  );
+  const count = await candidates.count().catch(() => 0);
+  let best: { locator: Locator; distance: number; area: number } | null = null;
+
+  for (let index = 0; index < Math.min(count, 250); index += 1) {
+    const candidate = candidates.nth(index);
+
+    if (!(await candidate.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    const box = await candidate.boundingBox().catch(() => null);
+    if (!box || box.width < 80 || box.height < 18) {
+      continue;
+    }
+
+    const isBelowLabel = box.y >= labelBox.y + labelBox.height - 3;
+    const isNearLabel = box.y <= labelBox.y + 80;
+    const isBeforeNextLabel = !nextLabelBox || box.y + box.height <= nextLabelBox.y + 3;
+    const overlapsHorizontally = box.x + box.width >= labelBox.x && box.x <= labelBox.x + Math.max(labelBox.width, 240);
+
+    if (!isBelowLabel || !isNearLabel || !isBeforeNextLabel || !overlapsHorizontally) {
+      continue;
+    }
+
+    const distance = Math.abs(box.y - (labelBox.y + labelBox.height));
+    const area = box.width * box.height;
+
+    if (!best || distance < best.distance || (distance === best.distance && area > best.area)) {
+      best = { locator: candidate, distance, area };
+    }
+  }
+
+  if (!best) {
+    throw new Error(`Controle do campo "${fieldName}" nao encontrado abaixo do label.`);
+  }
+
+  return best.locator;
+}
+
+async function findExactFieldLabelInProperties(page: Page, fieldName: string): Promise<Locator> {
+  const expected = normalizeText(fieldName);
+  const locator = page.locator(".properties *");
+  const count = await locator.count().catch(() => 0);
+  let fallback: Locator | null = null;
+
+  for (let index = 0; index < Math.min(count, 500); index += 1) {
+    const item = locator.nth(index);
+
+    if (!(await item.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    const visibleText = normalizeVisibleText(await item.innerText().catch(() => ""));
+    const normalized = normalizeText(visibleText);
+
+    if (normalized === expected) {
+      return item;
+    }
+
+    if (!fallback && visibleText.length <= 20 && normalized.startsWith(expected)) {
+      fallback = item;
+    }
+  }
+
+  if (fallback) {
+    return fallback;
+  }
+
+  throw new Error(`Label exato "${fieldName}" nao encontrado.`);
+}
+
+async function findNextFieldLabelBox(
+  page: Page,
+  currentLabelY: number,
+  currentFieldName: string
+): Promise<{ y: number } | null> {
+  const current = normalizeText(currentFieldName);
+  const labels = page.locator(".properties *");
+  const count = await labels.count().catch(() => 0);
+  let nextY: number | null = null;
+
+  for (let index = 0; index < Math.min(count, 500); index += 1) {
+    const item = labels.nth(index);
+
+    if (!(await item.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    const visibleText = normalizeVisibleText(await item.innerText().catch(() => ""));
+    const normalized = normalizeText(visibleText);
+
+    if (!normalized || normalized === current || visibleText.length > 60) {
+      continue;
+    }
+
+    const looksLikeFieldLabel =
+      normalized === "provedor" ||
+      normalized === "telefone de destino" ||
+      normalized === "namespace do template de mensagem" ||
+      normalized === "id do template de mensagem" ||
+      normalized === "id do caso";
+
+    if (!looksLikeFieldLabel) {
+      continue;
+    }
+
+    const box = await item.boundingBox().catch(() => null);
+    if (!box || box.y <= currentLabelY) {
+      continue;
+    }
+
+    if (nextY === null || box.y < nextY) {
+      nextY = box.y;
+    }
+  }
+
+  return nextY === null ? null : { y: nextY };
+}
+
+async function findActiveDropdownInput(page: Page, field: Locator): Promise<Locator> {
+  const candidates = [
+    field.locator("input").first(),
+    page.locator(".ng-dropdown-panel input").last(),
+    page.locator("[role='listbox'] input").last(),
+    page.locator(".properties input:focus").last(),
+    page.locator("input:focus").last()
+  ];
+
+  for (const candidate of candidates) {
+    if (await candidate.isVisible().catch(() => false)) {
+      return candidate;
+    }
+  }
+
+  return field;
+}
+
+export function selectWhatsappAccountForClinic(
+  options: VisibleOption[],
+  clinicName: string
+): WhatsappAccountSelectionResult {
+  const normalizedClinic = normalizeText(clinicName);
+  const candidates = options.filter((item) => normalizeText(item.text).includes(normalizedClinic));
+
+  if (candidates.length === 0) {
+    return {
+      status: "not_found",
+      selected: null,
+      candidates: [],
+      reason: "CONTA_NAO_ENCONTRADA"
+    };
+  }
+
+  if (candidates.length === 1) {
+    return {
+      status: "selected",
+      selected: candidates[0],
+      candidates
+    };
+  }
+
+  if (candidates.length >= 3) {
+    return {
+      status: "ambiguous",
+      selected: null,
+      candidates,
+      reason: "CONTA_TELEFONE_AMBIGUA"
+    };
+  }
+
+  const nonOdonto = candidates.filter((item) => !normalizeText(item.text).includes("odonto"));
+  const odonto = candidates.filter((item) => normalizeText(item.text).includes("odonto"));
+  const families = new Set(candidates.map((item) => canonicalAccountFamily(item.text)));
+
+  if (families.size === 1 && nonOdonto.length === 1 && odonto.length === 1) {
+    return {
+      status: "selected",
+      selected: nonOdonto[0],
+      candidates
+    };
+  }
+
+  return {
+    status: "ambiguous",
+    selected: null,
+    candidates,
+    reason: "CONTA_TELEFONE_AMBIGUA"
+  };
+}
+
+function canonicalAccountFamily(text: string): string {
+  return normalizeText(text)
+    .replace(/\bodonto\b/g, "")
+    .replace(/\bwhatsapp\b/g, "")
+    .replace(/\bwhats\b/g, "")
+    .replace(/\bzap\b/g, "")
+    .replace(/\b\d{6,}\b/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function doesTextContainClinic(text: string, clinicName: string): boolean {
+  const normalizedClinic = normalizeText(clinicName);
+  return Boolean(normalizedClinic) && normalizeText(text).includes(normalizedClinic);
+}
+
+function logWhatsappAccountCandidates(candidates: VisibleOption[]): void {
+  info("Opcoes candidatas:");
+
+  if (!candidates.length) {
+    console.log(" - nenhuma");
+    return;
+  }
+
+  for (const candidate of candidates) {
+    console.log(` - ${candidate.text}`);
+  }
+}
+
+function getWhatsappAccountSelectedMessage(result: WhatsappAccountSelectionResult): string {
+  if (!result.selected) {
+    return "Conta selecionada";
+  }
+
+  if (result.candidates.length === 1) {
+    return `Apenas uma conta encontrada para a clinica. Selecionando: ${result.selected.text}`;
+  }
+
+  return `Conta normal e Odonto equivalentes encontradas. Selecionando sem Odonto: ${result.selected.text}`;
+}
+
+async function registerWhatsappAccountPending(
+  page: Page,
+  params: {
+    clinicName: string;
+    url: string;
+    blockName: string;
+    currentAccount: string;
+    reason: string;
+    options: string[];
+  }
+): Promise<void> {
+  const pendingDir = path.join(errorScreenshotsDir, "contas-whatsapp-ambigua");
+  await fs.mkdir(pendingDir, { recursive: true });
+
+  const screenshotPath = path.join(
+    pendingDir,
+    `${slugify(params.clinicName)}-Enviar-Whatsapp-Conta-Ambigua.png`
+  );
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  const relativeScreenshot = path.relative(process.cwd(), screenshotPath).replace(/\\/g, "/");
+  ok(`Screenshot de conta pendente salvo: ${relativeScreenshot}`);
+
+  const pendingFile = path.join(errorScreenshotsDir, "contas-whatsapp-pendentes.txt");
+  await fs.mkdir(path.dirname(pendingFile), { recursive: true });
+
+  try {
+    await fs.access(pendingFile);
+  } catch {
+    await fs.writeFile(
+      pendingFile,
+      "Data/Hora | Clinica | URL | Bloco | Campo | Motivo | Conta Atual | Opcoes Encontradas | Screenshot\n",
+      "utf8"
+    );
+  }
+
+  const line = [
+    formatBotDateTime(new Date()),
+    params.clinicName,
+    params.url,
+    params.blockName,
+    "Conta",
+    params.reason,
+    params.currentAccount || "",
+    params.options.join("; "),
+    relativeScreenshot
+  ].join(" | ") + "\n";
+
+  await fs.appendFile(pendingFile, line, "utf8");
+  ok("Pendencia registrada em contas-whatsapp-pendentes.txt");
+}
+
+function formatBotDateTime(value: Date): string {
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ` +
+    `${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}`;
+}
+
 async function selectPropertiesOption(page: Page, optionName: string, fieldName: string): Promise<void> {
   await pauseIfEnabled(`selecionar ${fieldName} "${optionName}"`);
   info(`Selecionando ${fieldName} ${optionName}`);
@@ -1394,14 +2180,21 @@ export async function waitAndSelectOptionFast(
   info(`Procurando opcao "${params.expectedValue}" por ate ${maxWaitMs}ms`);
 
   while (Date.now() - startedAt < maxWaitMs) {
-    const options = await getVisibleOptions(page);
+    const { match, options } = await findMatchingVisibleOptionFast(
+      page,
+      params.expectedValue,
+      matchMode,
+      params.excludeValues
+    );
     lastOptions = options;
-    const match = findMatchingOption(options, params.expectedValue, matchMode, params.excludeValues);
 
     if (match) {
       assertSelectedOptionAllowed(params.expectedValue, match.text, matchMode);
       ok(`Opcao encontrada: ${match.text}. Clicando imediatamente.`);
-      await match.locator.click();
+      const clickable = await getClickableOptionLocator(match.locator);
+      await clickable.click({ timeout: 800 }).catch(async () => {
+        await clickable.click({ timeout: 800, force: true });
+      });
       await waitStep("apos selecionar opcao", delayAfterSelectMs);
       return match.text;
     }
@@ -1420,6 +2213,19 @@ export async function waitAndSelectOptionFast(
     expectedValue: params.expectedValue,
     availableOptions: lastOptions.map((option) => option.text)
   });
+}
+
+async function findMatchingVisibleOptionFast(
+  page: Page,
+  expectedValue: string,
+  matchMode: OptionMatchMode,
+  excludeValues: string[] = []
+): Promise<VisibleOptionLookupResult> {
+  const options = await collectVisibleOptionsFast(page);
+  return {
+    match: findMatchingOption(options, expectedValue, matchMode, excludeValues),
+    options
+  };
 }
 
 function findMatchingOption(
@@ -1727,19 +2533,8 @@ export async function saveChanges(page: Page): Promise<void> {
   await scrollRightPanelToBottom(page);
   info("Salvando alteracoes");
 
-  const saveButton = await findSaveChangesButton(page);
-  if (!saveButton) {
-    throw new AutomationError('Botao "Salvar Alteracoes" nao encontrado.');
-  }
-
-  await saveButton.click();
+  await clickSaveChangesAndWaitUntilGone(page);
   markWorkflowChanged();
-  ok("Salvar Alteracoes clicado");
-
-  await Promise.race([
-    page.getByText(/salvo|sucesso|alteracoes salvas|alteracoes salvas/i).first().waitFor({ state: "visible", timeout: 5000 }),
-    page.waitForLoadState("networkidle", { timeout: 5000 })
-  ]).catch(() => undefined);
   await waitStep("apos salvar alteracoes", getCurrentTiming().delayAfterSaveChangesMs);
 }
 
@@ -1817,12 +2612,81 @@ async function waitForSaveChangesButton(page: Page, maxWaitMs: number, pollInter
   return null;
 }
 
+async function clickSaveChangesAndWaitUntilGone(page: Page): Promise<void> {
+  const config = getConfig();
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const saveButton = await waitForSaveChangesButton(page, config.saveButtonMaxWaitMs, config.saveButtonPollIntervalMs);
+
+    if (!saveButton) {
+      throw new AutomationError('Botao "Salvar Alteracoes" nao encontrado.');
+    }
+
+    if (!(await saveButton.isEnabled().catch(() => false))) {
+      info(`Botao Salvar Alteracoes desabilitado, aguardando tentativa ${attempt}/3`);
+      await page.waitForTimeout(1000);
+      continue;
+    }
+
+    await clickSaveChangesButton(saveButton, `tentativa ${attempt}/3`);
+    ok(`Salvar Alteracoes clicado tentativa ${attempt}/3`);
+    await page.waitForTimeout(500);
+
+    const secondClickButton = await waitForSaveChangesButton(page, 1500, 150);
+    if (secondClickButton) {
+      await clickSaveChangesButton(secondClickButton, `segundo clique tentativa ${attempt}/3`);
+      ok(`Salvar Alteracoes clicado novamente tentativa ${attempt}/3`);
+    } else {
+      ok("Salvar Alteracoes saiu da tela antes do segundo clique");
+    }
+
+    await Promise.race([
+      page.getByText(/salvo|sucesso|alteracoes salvas|alteracoes salvas/i).first().waitFor({ state: "visible", timeout: 5000 }),
+      page.waitForLoadState("networkidle", { timeout: 5000 })
+    ]).catch(() => undefined);
+
+    const disappeared = await waitForSaveChangesButtonToDisappear(page, 5000, 250);
+    if (disappeared) {
+      ok("Salvar Alteracoes confirmado: botao saiu da tela");
+      return;
+    }
+
+    console.warn(`[WARN] Botao Salvar Alteracoes ainda aparece apos clicar. Tentando novamente (${attempt}/3).`);
+  }
+
+  throw new AutomationError('Salvar Alteracoes nao foi confirmado: botao continuou aparecendo apos 3 tentativas.');
+}
+
+async function clickSaveChangesButton(button: Locator, context: string): Promise<void> {
+  await button.click({ timeout: 1500 }).catch(async () => {
+    console.warn(`[WARN] Clique normal em Salvar Alteracoes falhou em ${context}. Tentando force.`);
+    await button.click({ timeout: 1500, force: true });
+  });
+}
+
+async function waitForSaveChangesButtonToDisappear(page: Page, maxWaitMs: number, pollIntervalMs: number): Promise<boolean> {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < maxWaitMs) {
+    const button = await findSaveChangesButton(page);
+    if (!button) {
+      return true;
+    }
+
+    await page.waitForTimeout(pollIntervalMs);
+  }
+
+  return false;
+}
+
 async function findSaveChangesButton(page: Page): Promise<Locator | null> {
   const exactSaveChangesText = /^Salvar Alter(a|á)ç(õ|o)es$/i;
   const candidates = [
     page.getByRole("button", { name: exactSaveChangesText }),
     page.locator("button").filter({ hasText: exactSaveChangesText }),
-    page.locator("[role='button']").filter({ hasText: exactSaveChangesText })
+    page.locator("[role='button']").filter({ hasText: exactSaveChangesText }),
+    page.locator("span.MuiTypography-root").filter({ hasText: exactSaveChangesText }).locator("xpath=ancestor::button[1]"),
+    page.locator("span").filter({ hasText: exactSaveChangesText }).locator("xpath=ancestor::*[@role='button'][1]")
   ];
 
   const visibleCandidates: Locator[] = [];

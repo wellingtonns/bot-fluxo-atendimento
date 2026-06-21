@@ -1,22 +1,21 @@
 {
-  "totalWorkflows": 2,
-  "success": 0,
+  "totalWorkflows": 1,
+  "success": 1,
   "error": 0,
-  "alreadyConfigured": 2,
-  "averageSecondsPerWorkflow": 16,
-  "totalSeconds": 31,
+  "alreadyConfigured": 0,
+  "averageSecondsPerWorkflow": 99,
+  "totalSeconds": 100,
   "workflows": [
     {
-      "clinicName": "Bebedouro",
-      "status": "already_configured",
-      "durationSeconds": 16,
-      "steps": []
-    },
-    {
-      "clinicName": "Belém Bengui e Icoaraci",
-      "status": "already_configured",
-      "durationSeconds": 15,
-      "steps": []
+      "clinicName": "Campo Grande MS",
+      "status": "success",
+      "durationSeconds": 99,
+      "steps": [
+        {
+          "name": "Enviar Whatsapp - Conta",
+          "durationSeconds": 82
+        }
+      ]
     }
   ]
 }

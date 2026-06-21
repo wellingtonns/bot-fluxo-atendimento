@@ -135,12 +135,22 @@ async function runWorkflowTarget(target) {
                 result.etapaErro = "Verificar workflow ja configurado";
                 const alreadyProcessed = await (0, bot_js_1.detectWorkflowAlreadyProcessed)(sharedPage, target.clinicName);
                 if (alreadyProcessed.alreadyConfigured) {
-                    result.status = "already_configured";
-                    result.message = "Workflow ja estava configurado. Nenhuma alteracao realizada.";
+                    (0, utils_js_1.ok)(alreadyProcessed.reason);
+                    (0, utils_js_1.info)("Workflow ja configurado na primeira etapa. Validando Enviar Whatsapp - Conta antes de pular.");
+                    result.etapaErro = "Enviar Whatsapp - Conta";
+                    await runStep(result, "Enviar Whatsapp - Conta", () => (0, bot_js_1.updateAllEnviarWhatsappAccountBlocks)(sharedPage));
+                    if ((0, bot_js_1.hasWorkflowChanges)()) {
+                        result.status = "success";
+                        result.message = "Workflow ja estava configurado, mas a Conta do Enviar Whatsapp foi ajustada.";
+                        (0, utils_js_1.ok)("Conta do Enviar Whatsapp ajustada em workflow que ja estava configurado.");
+                    }
+                    else {
+                        result.status = "already_configured";
+                        result.message = "Workflow ja estava configurado e Enviar Whatsapp - Conta ja estava correto.";
+                        console.log(`[SKIP] Clinica ${target.clinicName} ja configurada e Conta do Whatsapp correta. Indo para a proxima clinica.`);
+                    }
                     result.mensagemErro = "";
                     result.errorMessage = "";
-                    (0, utils_js_1.ok)(alreadyProcessed.reason);
-                    console.log(`[SKIP] Clinica ${target.clinicName} aparentemente ja configurada. Indo para a proxima clinica.`);
                     lastError = null;
                     break;
                 }
@@ -161,6 +171,10 @@ async function runWorkflowTarget(target) {
                 result.errorMessage = message;
                 result.etapaErro ||= "Etapa nao identificada";
                 applyErrorDetails(result, error);
+                if (error instanceof bot_js_1.WhatsappAccountPendingError) {
+                    (0, utils_js_1.errorLog)(`Pendencia manual em Conta do Whatsapp: ${message}`);
+                    break;
+                }
                 if (attemptNumber < maxAttempts) {
                     (0, utils_js_1.errorLog)(`Falha na tentativa ${attemptNumber}/${maxAttempts}: ${result.etapaErro}`);
                     (0, utils_js_1.errorLog)(message);
@@ -422,6 +436,7 @@ async function runConfiguredRules(page, result) {
     await runStep(result, "Contato Ativo Livre - Status", () => (0, bot_js_1.updateAllPresidenteContatoAtivoBlocks)(page));
     await runStep(result, "Voltar ao Menu Anterior", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Voltar ao Menu Anterior"] }, "Voltar ao Menu Anterior", "voltar-menu-anterior"));
     await runStep(result, "Contato Ativo Livre", () => (0, bot_js_1.updateActionBlock)(page, { includes: ["Contato Ativo Livre"] }, "Contato Ativo Livre", "contato-ativo-livre"));
+    await runStep(result, "Enviar Whatsapp - Conta", () => (0, bot_js_1.updateAllEnviarWhatsappAccountBlocks)(page));
 }
 async function runStep(result, blockName, action) {
     startStepTimer(blockName);
